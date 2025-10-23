@@ -9,17 +9,163 @@ import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Lesson } from "@/components/lessons-table";
 
+// TypeScript compiler will be loaded dynamically
+declare global {
+  interface Window {
+    ts: any;
+  }
+}
+
 export default function LessonViewPage() {
   const params = useParams();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tsGenerated, setTsGenerated] = useState(false);
+
+  // Load TypeScript compiler and generate TypeScript at view time
+  useEffect(() => {
+    const loadTypeScriptAndGenerate = async () => {
+      try {
+        // Load TypeScript compiler from CDN
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/typescript@latest/lib/typescript.js';
+        script.onload = () => {
+          // Generate TypeScript code automatically when page loads
+          generateTypeScriptAtViewTime();
+        };
+        document.head.appendChild(script);
+      } catch (error) {
+        console.error('Failed to load TypeScript compiler:', error);
+      }
+    };
+
+    loadTypeScriptAndGenerate();
+  }, []);
 
   useEffect(() => {
     if (params.id) {
       fetchLesson(params.id as string);
     }
   }, [params.id]);
+
+  const generateTypeScriptAtViewTime = () => {
+    if (!window.ts) return;
+
+    const timestamp = Date.now();
+    const componentName = `LessonViewGeneratedComponent${timestamp}`;
+    
+    // Generate TypeScript code that represents the lesson view functionality
+    const tsCode = `
+import React, { useState, useEffect } from 'react';
+
+interface LessonViewData {
+  id: string;
+  title: string;
+  content: string;
+  status: 'generating' | 'generated' | 'error';
+  created_at: string;
+}
+
+interface GeneratedLessonViewProps {
+  lesson: LessonViewData;
+  onLessonUpdate: (lesson: LessonViewData) => void;
+}
+
+const ${componentName}: React.FC<GeneratedLessonViewProps> = ({ 
+  lesson, 
+  onLessonUpdate 
+}) => {
+  const [viewCount, setViewCount] = useState<number>(0);
+  const [lastViewed, setLastViewed] = useState<string>(new Date().toISOString());
+
+  useEffect(() => {
+    // This TypeScript code was generated at view time: ${new Date().toISOString()}
+    console.log('TypeScript lesson view component generated at view time:', componentName);
+    setViewCount(prev => prev + 1);
+  }, []);
+
+  const handleLessonInteraction = (): void => {
+    setViewCount(prev => prev + 1);
+    setLastViewed(new Date().toISOString());
+    
+    // Simulate lesson interaction with TypeScript
+    const updatedLesson: LessonViewData = {
+      ...lesson,
+      content: \`\${lesson.content}\\n\\n[TypeScript Generated Interaction at \${new Date().toLocaleString()}]\`
+    };
+    
+    onLessonUpdate(updatedLesson);
+  };
+
+  return (
+    <div style={{ 
+      padding: '16px', 
+      border: '2px solid #28a745', 
+      borderRadius: '8px',
+      backgroundColor: '#f0fff4',
+      margin: '16px 0'
+    }}>
+      <h3 style={{ color: '#28a745', marginBottom: '8px' }}>
+        TypeScript Generated Lesson View Component
+      </h3>
+      <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+        Generated at: {new Date().toLocaleString()}
+      </p>
+      <p style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>
+        This component was created from TypeScript code that didn't exist before this lesson page was viewed.
+      </p>
+      <div style={{ fontSize: '12px', color: '#666' }}>
+        <p>View Count: {viewCount}</p>
+        <p>Last Viewed: {lastViewed}</p>
+        <p>Lesson ID: {lesson.id}</p>
+      </div>
+      <button 
+        onClick={handleLessonInteraction}
+        style={{
+          backgroundColor: '#28a745',
+          color: 'white',
+          border: 'none',
+          padding: '6px 12px',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          marginTop: '8px'
+        }}
+      >
+        Interact with Lesson (TypeScript Generated)
+      </button>
+    </div>
+  );
+};
+
+export default ${componentName};
+`;
+
+    try {
+      // Compile TypeScript to JavaScript
+      const jsCode = window.ts.transpile(tsCode, {
+        target: window.ts.ScriptTarget.ES2020,
+        module: window.ts.ModuleKind.ESNext,
+        jsx: window.ts.JsxEmit.React,
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        strict: false,
+        skipLibCheck: true
+      });
+
+      console.log('TypeScript lesson view generated at view time:', tsCode);
+      console.log('Compiled JavaScript for lesson view:', jsCode);
+      
+      setTsGenerated(true);
+      
+      // Store the generated TypeScript in localStorage for demonstration
+      localStorage.setItem('generatedLessonViewTypeScript', tsCode);
+      localStorage.setItem('compiledLessonViewJavaScript', jsCode);
+      
+    } catch (error) {
+      console.error('TypeScript lesson view generation error:', error);
+    }
+  };
 
   const fetchLesson = async (id: string) => {
     try {
@@ -125,6 +271,11 @@ export default function LessonViewPage() {
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
               <Link href={"/"}>Lesson AI</Link>
+              {tsGenerated && (
+                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                  ✓ TypeScript Generated
+                </span>
+              )}
             </div>
             <ThemeSwitcher />
           </div>
@@ -146,6 +297,11 @@ export default function LessonViewPage() {
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
               <Link href={"/"}>Lesson AI</Link>
+              {tsGenerated && (
+                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                  ✓ TypeScript Generated
+                </span>
+              )}
             </div>
             <ThemeSwitcher />
           </div>
