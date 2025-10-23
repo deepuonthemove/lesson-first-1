@@ -68,7 +68,7 @@ export default function LessonViewPage() {
   const renderMarkdownContent = (content: string) => {
     // Simple markdown rendering - in a real app you'd use a proper markdown library
     const lines = content.split('\n');
-    const elements: JSX.Element[] = [];
+    const elements: React.ReactElement[] = [];
     let key = 0;
 
     for (let i = 0; i < lines.length; i++) {

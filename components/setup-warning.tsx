@@ -30,7 +30,7 @@ export function SetupWarning() {
               <div>NEXT_PUBLIC_SUPABASE_URL=your_supabase_url</div>
               <div>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_key</div>
             </div>
-            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-600 mt-3" start="3">
+            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-600 mt-3" start={3}>
               <li>Run the SQL schema in your Supabase project (see SETUP.md)</li>
               <li>Restart your development server</li>
             </ol>

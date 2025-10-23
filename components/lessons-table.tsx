@@ -9,7 +9,7 @@ import { useState } from "react";
 export interface Lesson {
   id: string;
   title: string;
-  status: "generating" | "generated";
+  status: "generating" | "generated" | "error";
   outline: string;
   content?: string;
   created_at: string;
@@ -54,6 +54,8 @@ export function LessonsTable({ lessons, onLessonDeleted }: LessonsTableProps) {
         return <Badge variant="secondary">Generating</Badge>;
       case "generated":
         return <Badge variant="default">Generated</Badge>;
+      case "error":
+        return <Badge variant="destructive">Error</Badge>;
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }
@@ -117,18 +119,20 @@ export function LessonsTable({ lessons, onLessonDeleted }: LessonsTableProps) {
                   </td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
-                      {lesson.status === "generated" ? (
+                      {lesson.status === "generated" || lesson.status === "error" ? (
                         <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            asChild
-                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                          >
-                            <Link href={`/lessons/${lesson.id}`}>
-                              View Lesson
-                            </Link>
-                          </Button>
+                          {lesson.status === "generated" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              asChild
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                            >
+                              <Link href={`/lessons/${lesson.id}`}>
+                                View Lesson
+                              </Link>
+                            </Button>
+                          )}
                           
                           {showDeleteConfirm === lesson.id ? (
                             <div className="flex items-center gap-1">
