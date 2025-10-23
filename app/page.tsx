@@ -170,7 +170,14 @@ export default ${componentName};
     }
   };
 
-  const handleGenerateLesson = async (outline: string) => {
+  const handleGenerateLesson = async (options: {
+    outline: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    duration: number;
+    learningStyle: 'visual' | 'auditory' | 'kinesthetic' | 'reading';
+    includeExamples: boolean;
+    includeExercises: boolean;
+  }) => {
     setIsGenerating(true);
     try {
       const response = await fetch("/api/lessons", {
@@ -178,7 +185,7 @@ export default ${componentName};
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ outline }),
+        body: JSON.stringify(options),
       });
 
       if (response.ok) {
