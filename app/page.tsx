@@ -5,32 +5,17 @@ import { LessonGenerationForm } from "@/components/lesson-generation-form";
 import { LessonsTable, Lesson } from "@/components/lessons-table";
 import { SetupWarning } from "@/components/setup-warning";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 export default function Home() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
 
-  // Fetch lessons and user on component mount
+  // Fetch lessons on component mount
   useEffect(() => {
     fetchLessons();
-    getUser();
   }, []);
-
-  const getUser = async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
-  };
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  };
 
   const fetchLessons = async () => {
     try {
@@ -115,19 +100,6 @@ export default function Home() {
               <Link href={"/"}>Lesson AI</Link>
             </div>
             <div className="flex items-center gap-4">
-              {user && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">
-                    Welcome, {user.email}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
               <ThemeSwitcher />
             </div>
           </div>

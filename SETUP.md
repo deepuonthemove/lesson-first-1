@@ -18,7 +18,7 @@ This is a two-page full-stack application that allows you to generate and view A
 
 ### 1. Database Setup
 
-Run the following SQL in your Supabase SQL editor to create the required table and demo user:
+Run the following SQL in your Supabase SQL editor to create the required table:
 
 ```sql
 -- Create lessons table
@@ -39,12 +39,10 @@ CREATE INDEX IF NOT EXISTS idx_lessons_status ON lessons(status);
 -- Enable Row Level Security (RLS)
 ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
 
--- Create a policy that allows authenticated users to access all lessons
-CREATE POLICY "Allow authenticated users to access lessons" ON lessons
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Create a policy that allows service role to access all lessons
+CREATE POLICY "Allow service role to access lessons" ON lessons
+  FOR ALL USING (true);
 ```
-
-**OR** run the complete setup script from `demo-user-setup.sql` which includes the demo user creation.
 
 ### 2. Environment Variables
 
@@ -56,6 +54,7 @@ Create a file called `.env.local` in the project root with the following content
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url_here
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 ```
 
 **How to get these values:**
@@ -63,34 +62,19 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key_here
 1. Go to your Supabase dashboard: https://supabase.com/dashboard
 2. Select your project (or create a new one)
 3. Go to Settings → API
-4. Copy the "Project URL" and "Project API keys" → "anon public" key
+4. Copy the "Project URL", "Project API keys" → "anon public" key, and "Project API keys" → "service_role" key
 5. Replace the placeholder values in your `.env.local` file
 
 **Example:**
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://abcdefghijklmnop.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiY2RlZmdoaWprbG1ub3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY5ODc2ODAwMCwiZXhwIjoyMDE0MzQ0MDAwfQ.example_key_here
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiY2RlZmdoaWprbG1ub3AiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjk4NzY4MDAwLCJleHAiOjIwMTQzNDQwMDB9.example_service_key_here
 ```
 
 **⚠️ Without these environment variables, the application will not work!**
 
-### 3. Create Demo User
-
-You have two options to create the demo user:
-
-**Option A: Using Supabase Dashboard (Recommended)**
-1. Go to your Supabase dashboard
-2. Navigate to **Authentication** → **Users**
-3. Click **"Add user"**
-4. Enter:
-   - **Email**: `demo@lessonai.com`
-   - **Password**: `demo123`
-5. Click **"Create user"**
-
-**Option B: Using SQL**
-Run the SQL script in `demo-user-setup.sql` in your Supabase SQL Editor.
-
-### 4. Install Dependencies
+### 3. Install Dependencies
 
 ```bash
 npm install
@@ -98,7 +82,7 @@ npm install
 bun install
 ```
 
-### 5. Run the Development Server
+### 4. Run the Development Server
 
 ```bash
 npm run dev
@@ -108,13 +92,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-### 6. Login with Demo User
-
-1. You'll be redirected to the login page
-2. Click **"Sign in as Demo User"** or enter:
-   - **Email**: `demo@lessonai.com`
-   - **Password**: `demo123`
-3. You'll be redirected to the main application
+**Note**: The application now works without user authentication. You can directly access the lesson generation interface.
 
 ## How It Works
 
