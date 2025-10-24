@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateLessonWithTracing, getDefaultProvider, getAvailableProviders, type LessonGenerationOptions } from "@/lib/llm";
 import { logServerError, logServerMessage, withSentryErrorHandling, withSpan } from "@/lib/sentry";
+import { parseMarkdownToStructure, generateLessonTypeScriptComponent } from "@/lib/lesson-typescript-generator";
 
 export const GET = withSentryErrorHandling(async () => {
   return withSpan("api.lessons.get", "http.server", async () => {
@@ -130,22 +131,46 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
       // Generate lesson content using LLM with automatic fallback and tracing
       const generatedLesson = await generateLessonWithTracing(options, { provider: getDefaultProvider() }, lessonId);
       
+      logServerMessage("LLM generation complete, starting TypeScript conversion", "info", {
+        lessonId,
+        contentLength: generatedLesson.content.length
+      });
+      
+      // Parse markdown to structured lesson format
+      const lessonStructure = parseMarkdownToStructure(generatedLesson.content, lessonId);
+      
+      // Generate TypeScript component from structure
+      const tsResult = generateLessonTypeScriptComponent(lessonStructure);
+      
+      if (!tsResult.success) {
+        logServerMessage("TypeScript generation failed, saving without TS", "warning", {
+          lessonId,
+          errors: tsResult.errors
+        });
+      }
+      
       const supabase = createServiceClient();
       
-      // Update lesson with generated content
+      // Update lesson with generated content and TypeScript
       await supabase
         .from("lessons")
         .update({
           status: "generated",
           content: generatedLesson.content,
           title: generatedLesson.title,
+          typescript_code: tsResult.success ? tsResult.tsCode : null,
+          javascript_code: tsResult.success ? tsResult.jsCode : null,
+          lesson_structure: lessonStructure,
         })
         .eq("id", lessonId);
       
-      logServerMessage("Successfully generated lesson", "info", {
+      logServerMessage("Successfully generated lesson with TypeScript", "info", {
         lessonId,
         title: generatedLesson.title,
-        contentLength: generatedLesson.content.length
+        contentLength: generatedLesson.content.length,
+        sectionsCount: lessonStructure.sections.length,
+        mediaCount: lessonStructure.media.length,
+        typescriptGenerated: tsResult.success
       });
     } catch (error) {
       logServerError(error as Error, {

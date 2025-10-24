@@ -1,4 +1,5 @@
-import { generateLessonWithOpenAI, type LessonGenerationOptions, type GeneratedLesson } from './openai';
+import { generateLessonWithOpenAI, type GeneratedLesson } from './openai';
+import { type LessonGenerationOptions } from './prompts';
 import { generateLessonWithAnthropic } from './anthropic';
 import { generateLessonWithGroq } from './groq';
 import { generateLessonWithGemini } from './gemini';
@@ -237,7 +238,8 @@ export function getDefaultProvider(): LLMProvider {
 }
 
 // Re-export types and functions for convenience
-export type { LessonGenerationOptions, GeneratedLesson } from './openai';
+export type { LessonGenerationOptions } from './prompts';
+export type { GeneratedLesson } from './openai';
 export { generateLessonWithOpenAI } from './openai';
 export { generateLessonWithAnthropic } from './anthropic';
 export { generateLessonWithGroq } from './groq';
