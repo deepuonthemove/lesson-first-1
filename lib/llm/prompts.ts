@@ -1,8 +1,8 @@
 export interface LessonGenerationOptions {
   outline: string;
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
-  duration?: number; // in minutes
-  learningStyle?: 'visual' | 'auditory' | 'kinesthetic' | 'reading';
+  gradeLevel?: '2' | '3' | '4' | '5' | '6' | '7' | '8';
+  sections?: number; // in minutes
+  learningStyle?: 'reading and visual' | 'reading';
   includeExamples?: boolean;
   includeExercises?: boolean;
 }
@@ -39,8 +39,8 @@ Format the response as a complete lesson with proper markdown formatting.`;
 export function getUserPrompt(options: LessonGenerationOptions): string {
   const {
     outline,
-    difficulty = 'intermediate',
-    duration = 30,
+    gradeLevel = '2',
+    sections = 4,
     learningStyle = 'reading',
     includeExamples = true,
     includeExercises = true
@@ -49,14 +49,14 @@ export function getUserPrompt(options: LessonGenerationOptions): string {
   return `Create a comprehensive lesson based on this outline: "${outline}"
 
 Requirements:
-- Difficulty Level: ${difficulty}
-- Estimated Duration: ${duration} minutes
+- School grade level: ${gradeLevel}
+- Minimum number of sections: ${sections}
 - Learning Style: ${learningStyle}
 - Include Examples: ${includeExamples ? 'Yes' : 'No'}
 - Include Exercises: ${includeExercises ? 'Yes' : 'No'}
 
 Please generate a complete lesson with:
-1. A compelling title
+1. A compelling title (start with #). Dont start the title with Generated.
 2. Clear learning objectives
 3. Structured content with examples
 4. Key concepts highlighted
@@ -73,8 +73,8 @@ Format everything in proper markdown.`;
 export function getCombinedPrompt(options: LessonGenerationOptions): string {
   const {
     outline,
-    difficulty = 'intermediate',
-    duration = 30,
+    gradeLevel = '2',
+    sections = 4,
     learningStyle = 'reading',
     includeExamples = true,
     includeExercises = true
@@ -83,14 +83,14 @@ export function getCombinedPrompt(options: LessonGenerationOptions): string {
   return `You are an expert educational content creator. Create a comprehensive lesson based on this outline: "${outline}"
 
 Requirements:
-- Difficulty Level: ${difficulty}
-- Estimated Duration: ${duration} minutes
+- School grade level: ${gradeLevel}
+- Minimum number of sections: ${sections}
 - Learning Style: ${learningStyle}
 - Include Examples: ${includeExamples ? 'Yes' : 'No'}
 - Include Exercises: ${includeExercises ? 'Yes' : 'No'}
 
 Please generate a complete lesson with:
-1. A compelling title (start with #)
+1. A compelling title (start with #). Dont start the title with Generated.
 2. Clear learning objectives
 3. Structured content with examples
 4. Key concepts highlighted
@@ -162,4 +162,29 @@ export function extractPrerequisites(content: string): string[] {
 export function extractDuration(content: string): number | null {
   const durationMatch = content.match(/(\d+)\s*(?:minute|min|hour|hr)/i);
   return durationMatch ? parseInt(durationMatch[1]) : null;
+}
+
+export function extractGradeLevel(content: string): string {
+  const gradeLevelMatch = content.match(/School grade level: (\d+)/i);
+  return gradeLevelMatch ? gradeLevelMatch[1] : '2';
+}
+
+/**
+ * Count the number of sections in markdown content by counting level 2 and 3 headers
+ * Level 2 (##) headers are considered main sections
+ * Level 3 (###) headers are considered subsections
+ */
+export function countSectionsFromContent(content: string): number {
+  // Match all level 2 (##) and level 3 (###) headers, but not level 1 (#) which is the title
+  const headerMatches = content.match(/^#{2,3}\s+.+$/gm);
+  
+  if (!headerMatches) {
+    // If no headers found, try to count sections by looking for numbered lists or other indicators
+    const numberedSections = content.match(/^\d+\.\s+[A-Z]/gm);
+    return numberedSections ? numberedSections.length : 1;
+  }
+  
+  // Count level 2 headers as main sections
+  const mainSections = content.match(/^#{2}\s+.+$/gm);
+  return mainSections ? mainSections.length : headerMatches.length;
 }

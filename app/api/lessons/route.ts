@@ -41,8 +41,8 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
     try {
       const { 
         outline, 
-        difficulty = 'intermediate',
-        duration = 30,
+        gradeLevel = '2',
+        sections = 4,
         learningStyle = 'reading',
         includeExamples = true,
         includeExercises = true 
@@ -50,8 +50,8 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
 
       logServerMessage("Creating new lesson", "info", {
         outline: outline?.substring(0, 100),
-        difficulty,
-        duration,
+        gradeLevel,
+        sections,
         learningStyle
       });
 
@@ -92,8 +92,8 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
       // Start lesson generation in the background with LLM
       generateLessonContentWithLLM(lesson.id, {
         outline: outline.trim(),
-        difficulty,
-        duration,
+        gradeLevel,
+        sections,
         learningStyle,
         includeExamples,
         includeExercises
@@ -113,8 +113,8 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
       logServerMessage("Starting LLM lesson generation", "info", {
         lessonId,
         outline: options.outline.substring(0, 100) + '...',
-        difficulty: options.difficulty,
-        duration: options.duration,
+        gradeLevel: options.gradeLevel,
+        sections: options.sections,
         learningStyle: options.learningStyle
       });
       
@@ -177,8 +177,8 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
         lessonId,
         operation: "lesson_generation",
         outline: options.outline.substring(0, 100),
-        difficulty: options.difficulty,
-        duration: options.duration,
+        gradeLevel: options.gradeLevel,
+        sections: options.sections,
         learningStyle: options.learningStyle
       });
       

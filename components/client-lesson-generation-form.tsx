@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 
 interface LessonGenerationOptions {
   outline: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  duration: number;
-  learningStyle: 'visual' | 'auditory' | 'kinesthetic' | 'reading';
+  gradeLevel: '2' | '3' | '4' | '5' | '6' | '7' | '8';
+  sections: number;
+  learningStyle: 'reading and visual' | 'reading';
   includeExamples: boolean;
   includeExercises: boolean;
 }

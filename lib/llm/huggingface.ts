@@ -3,8 +3,8 @@ import {
   getCombinedPrompt, 
   extractTitle, 
   extractKeyConcepts, 
-  extractPrerequisites, 
-  extractDuration,
+  extractPrerequisites,
+  countSectionsFromContent,
   type LessonGenerationOptions 
 } from './prompts';
 
@@ -19,16 +19,16 @@ function getHuggingFaceClient() {
 export interface GeneratedLesson {
   title: string;
   content: string;
-  estimatedDuration: number;
-  difficulty: string;
+  estimatedSections: number;
+  gradeLevel: string;
   keyConcepts: string[];
   prerequisites: string[];
 }
 
 export async function generateLessonWithHuggingFace(options: LessonGenerationOptions): Promise<GeneratedLesson> {
   const {
-    difficulty = 'intermediate',
-    duration = 30
+    gradeLevel = '2',
+    sections = 4
   } = options;
 
   const prompt = getCombinedPrompt(options);
@@ -56,13 +56,13 @@ export async function generateLessonWithHuggingFace(options: LessonGenerationOpt
     const title = extractTitle(content);
     const keyConcepts = extractKeyConcepts(content);
     const prerequisites = extractPrerequisites(content);
-    const estimatedDuration = extractDuration(content) || duration;
+    const estimatedSections = countSectionsFromContent(content);
 
     return {
       title,
       content,
-      estimatedDuration,
-      difficulty,
+      estimatedSections,
+      gradeLevel,
       keyConcepts,
       prerequisites
     };

@@ -14,18 +14,18 @@ interface LessonGenerationFormProps {
 
 interface LessonGenerationOptions {
   outline: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  duration: number;
-  learningStyle: 'visual' | 'auditory' | 'kinesthetic' | 'reading';
+  gradeLevel: '2' | '3' | '4' | '5' | '6' | '7' | '8';
+  sections: number;
+  learningStyle: 'reading and visual' | 'reading';
   includeExamples: boolean;
   includeExercises: boolean;
 }
 
 export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerationFormProps) {
   const [outline, setOutline] = useState("");
-  const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('intermediate');
-  const [duration, setDuration] = useState(30);
-  const [learningStyle, setLearningStyle] = useState<'visual' | 'auditory' | 'kinesthetic' | 'reading'>('reading');
+  const [gradeLevel, setGradeLevel] = useState<'2' | '3' | '4' | '5' | '6' | '7' | '8'>('2');
+  const [sections, setSections] = useState(4);
+  const [learningStyle, setLearningStyle] = useState<'reading and visual' | 'reading'>('reading');
   const [includeExamples, setIncludeExamples] = useState(true);
   const [includeExercises, setIncludeExercises] = useState(true);
 
@@ -35,8 +35,8 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
       if (outline.trim()) {
         logUserAction("lesson_generation_started", {
           outline: outline.trim().substring(0, 100),
-          difficulty,
-          duration,
+          gradeLevel,
+          sections,
           learningStyle,
           includeExamples,
           includeExercises
@@ -44,8 +44,8 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
         
         onGenerate({
           outline: outline.trim(),
-          difficulty,
-          duration,
+          gradeLevel,
+          sections,
           learningStyle,
           includeExamples,
           includeExercises
@@ -82,29 +82,33 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="difficulty">Difficulty Level</Label>
+              <Label htmlFor="gradeLevel">Grade Level</Label>
               <select
-                id="difficulty"
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value as 'beginner' | 'intermediate' | 'advanced')}
+                id="gradeLevel"
+                value={gradeLevel}
+                onChange={(e) => setGradeLevel(e.target.value as '2' | '3' | '4' | '5' | '6' | '7' | '8')}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isGenerating}
               >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
               </select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration (minutes)</Label>
+              <Label htmlFor="sections">Sections</Label>
               <input
-                id="duration"
+                id="sections"
                 type="number"
-                min="10"
-                max="120"
-                value={duration}
-                onChange={(e) => setDuration(parseInt(e.target.value))}
+                min="2"
+                max="10"
+                value={sections}
+                onChange={(e) => setSections(parseInt(e.target.value))}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isGenerating}
               />
@@ -116,13 +120,11 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
             <select
               id="learningStyle"
               value={learningStyle}
-              onChange={(e) => setLearningStyle(e.target.value as 'visual' | 'auditory' | 'kinesthetic' | 'reading')}
+              onChange={(e) => setLearningStyle(e.target.value as 'reading and visual' | 'reading')}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isGenerating}
             >
-              <option value="visual">Visual (diagrams, charts, images)</option>
-              <option value="auditory">Auditory (explanations, discussions)</option>
-              <option value="kinesthetic">Kinesthetic (hands-on activities)</option>
+              <option value="reading and visual">Reading and Visual (diagrams, charts, images)</option>
               <option value="reading">Reading (text-based content)</option>
             </select>
           </div>

@@ -4,8 +4,8 @@ import {
   getUserPrompt, 
   extractTitle, 
   extractKeyConcepts, 
-  extractPrerequisites, 
-  extractDuration,
+  extractPrerequisites,
+  countSectionsFromContent,
   type LessonGenerationOptions 
 } from './prompts';
 
@@ -22,16 +22,16 @@ function getAnthropicClient() {
 export interface GeneratedLesson {
   title: string;
   content: string;
-  estimatedDuration: number;
-  difficulty: string;
+  estimatedSections: number;
+  gradeLevel: string;
   keyConcepts: string[];
   prerequisites: string[];
 }
 
 export async function generateLessonWithAnthropic(options: LessonGenerationOptions): Promise<GeneratedLesson> {
   const {
-    difficulty = 'intermediate',
-    duration = 30
+    gradeLevel = '2',
+    sections = 4
   } = options;
 
   const systemPrompt = SYSTEM_PROMPT;
@@ -63,13 +63,13 @@ export async function generateLessonWithAnthropic(options: LessonGenerationOptio
     const title = extractTitle(lessonContent);
     const keyConcepts = extractKeyConcepts(lessonContent);
     const prerequisites = extractPrerequisites(lessonContent);
-    const estimatedDuration = extractDuration(lessonContent) || duration;
+    const estimatedSections = countSectionsFromContent(lessonContent);
 
     return {
       title,
       content: lessonContent,
-      estimatedDuration,
-      difficulty,
+      estimatedSections,
+      gradeLevel,
       keyConcepts,
       prerequisites
     };

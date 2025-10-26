@@ -18,14 +18,14 @@ export interface LLMConfig {
 
 export async function generateLesson(
   options: LessonGenerationOptions,
-  config: LLMConfig = { provider: 'openai' }
+  config: LLMConfig = { provider: getDefaultProvider() }
 ): Promise<GeneratedLesson> {
   return generateLessonWithTracing(options, config);
 }
 
 export async function generateLessonWithTracing(
   options: LessonGenerationOptions,
-  config: LLMConfig = { provider: 'openai' },
+  config: LLMConfig = { provider: getDefaultProvider() },
   lessonId?: string
 ): Promise<GeneratedLesson> {
   const { provider } = config;
@@ -178,20 +178,22 @@ async function callProviderWithTracing(
 export function getAvailableProviders(): LLMProvider[] {
   const providers: LLMProvider[] = [];
   
-  // Free providers first (prioritize free options)
-  // Qwen first (most capable free option)
-  if (process.env.HUGGINGFACE_API_KEY) {
-    providers.push('qwen');
-  }
-  
-  if (process.env.GROQ_API_KEY) {
-    providers.push('groq');
-  }
-  
+  // Google first (AI Studio)
   if (process.env.GOOGLE_API_KEY) {
     providers.push('gemini');
   }
   
+  // Groq second
+  if (process.env.GROQ_API_KEY) {
+    providers.push('groq');
+  }
+  
+  // Qwen third
+  if (process.env.HUGGINGFACE_API_KEY) {
+    providers.push('qwen');
+  }
+  
+  // Other free providers
   if (process.env.HUGGINGFACE_API_KEY) {
     providers.push('huggingface');
   }
@@ -216,25 +218,17 @@ export function getAvailableProviders(): LLMProvider[] {
 export function getDefaultProvider(): LLMProvider {
   const available = getAvailableProviders();
   
-  // Prefer free providers first, then paid providers
-  const freeProviders: LLMProvider[] = ['qwen', 'groq', 'gemini', 'huggingface', 'ollama'];
-  const paidProviders: LLMProvider[] = ['openai', 'anthropic'];
+  // Priority order: Google → Groq → Qwen → others
+  const priorityProviders: LLMProvider[] = ['gemini', 'groq', 'qwen', 'huggingface', 'ollama', 'openai', 'anthropic'];
   
-  // Try free providers first
-  for (const provider of freeProviders) {
+  // Try providers in priority order
+  for (const provider of priorityProviders) {
     if (available.includes(provider)) {
       return provider;
     }
   }
   
-  // Fall back to paid providers
-  for (const provider of paidProviders) {
-    if (available.includes(provider)) {
-      return provider;
-    }
-  }
-  
-  return available[0] || 'groq' as LLMProvider; // Default to Groq (free)
+  return available[0] || 'gemini' as LLMProvider; // Default to Gemini (Google AI Studio)
 }
 
 // Re-export types and functions for convenience
