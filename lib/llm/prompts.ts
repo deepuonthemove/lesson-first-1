@@ -5,6 +5,7 @@ export interface LessonGenerationOptions {
   learningStyle?: 'reading and visual' | 'reading';
   includeExamples?: boolean;
   includeExercises?: boolean;
+  numberOfImages?: 1 | 2; // Only when learningStyle is 'reading and visual'
 }
 
 /**

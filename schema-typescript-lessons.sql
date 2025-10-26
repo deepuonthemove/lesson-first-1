@@ -13,6 +13,10 @@ ADD COLUMN IF NOT EXISTS javascript_code TEXT;
 ALTER TABLE lessons 
 ADD COLUMN IF NOT EXISTS lesson_structure JSONB;
 
+-- Add generated images column for AI-generated images
+ALTER TABLE lessons 
+ADD COLUMN IF NOT EXISTS generated_images JSONB DEFAULT '[]'::jsonb;
+
 -- Add updated_at column if it doesn't exist
 ALTER TABLE lessons 
 ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();

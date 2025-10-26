@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateLessonWithTracing, getDefaultProvider, getAvailableProviders, type LessonGenerationOptions } from "@/lib/llm";
 import { logServerError, logServerMessage, withSentryErrorHandling, withSpan } from "@/lib/sentry";
-import { parseMarkdownToStructure, generateLessonTypeScriptComponent } from "@/lib/lesson-typescript-generator";
+import { parseMarkdownToStructure, generateLessonTypeScriptComponent, type LessonStructure } from "@/lib/lesson-typescript-generator";
+import { extractImagePromptsFromContent, generateImagesInParallel } from "@/lib/llm/image-generation";
+import { uploadImagesInParallel } from "@/lib/supabase/storage";
+import { ImageTracer } from "@/lib/image-tracing";
 
 export const GET = withSentryErrorHandling(async () => {
   return withSpan("api.lessons.get", "http.server", async () => {
@@ -45,7 +48,8 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
         sections = 4,
         learningStyle = 'reading',
         includeExamples = true,
-        includeExercises = true 
+        includeExercises = true,
+        numberOfImages
       } = await request.json();
 
       logServerMessage("Creating new lesson", "info", {
@@ -96,7 +100,8 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
         sections,
         learningStyle,
         includeExamples,
-        includeExercises
+        includeExercises,
+        numberOfImages: learningStyle === 'reading and visual' ? numberOfImages : undefined
       });
 
       return NextResponse.json({ lesson });
@@ -137,9 +142,182 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
       });
       
       // Parse markdown to structured lesson format
-      const lessonStructure = parseMarkdownToStructure(generatedLesson.content, lessonId);
+      let lessonStructure = parseMarkdownToStructure(generatedLesson.content, lessonId);
+      
+      // Generate images if requested (reading and visual with numberOfImages)
+      // IMPORTANT: We WAIT for images to complete before marking lesson as "generated"
+      // BUT if images fail, we still mark as "generated" with a flag
+      let generatedImageData: any[] = [];
+      let imageGenerationFailed = false;
+      let imageGenerationError = '';
+      // Check if any image generation provider is available
+      const shouldGenerateImages = options.learningStyle === 'reading and visual' && 
+                                    options.numberOfImages && 
+                                    (process.env.HUGGINGFACE_API_KEY || process.env.IMAGEROUTERIO_API_KEY || true); // Pollinations is always available
+      
+      if (shouldGenerateImages) {
+        logServerMessage("Starting image generation - lesson will wait for completion", "info", {
+          lessonId,
+          numberOfImages: options.numberOfImages
+        });
+        
+        // Create image tracer
+        const imageTracer = new ImageTracer(lessonId);
+        
+        try {
+          // Extract prompts from content
+          const imagePrompts = await extractImagePromptsFromContent(
+            generatedLesson.content,
+            options.numberOfImages!
+          );
+          
+          logServerMessage("Image prompts extracted", "info", {
+            lessonId,
+            prompts: imagePrompts.map(p => ({ position: p.position, prompt: p.prompt.substring(0, 50) }))
+          });
+          
+          // Start trace
+          await imageTracer.startTrace({
+            lessonId,
+            numberOfImages: options.numberOfImages,
+            prompts: imagePrompts.map(p => ({ 
+              prompt: p.prompt, 
+              position: p.position,
+              targetSection: p.targetSection 
+            })),
+            contentLength: generatedLesson.content.length
+          });
+          
+          // Generate images in parallel - WAIT for all to complete
+          const generatedImages = await generateImagesInParallel(imagePrompts, imageTracer);
+          
+          if (generatedImages.length === 0) {
+            throw new Error(`Image generation failed - expected ${options.numberOfImages} images, got 0`);
+          }
+          
+          logServerMessage("Images generated successfully, uploading to storage", "info", {
+            lessonId,
+            count: generatedImages.length,
+            expected: options.numberOfImages
+          });
+          
+          // Upload images to Supabase Storage in parallel - WAIT for all uploads
+          const uploadData = generatedImages.map((img, index) => ({
+            base64Data: img.base64Data,
+            index
+          }));
+          
+          const imageUrls = await uploadImagesInParallel(uploadData, lessonId);
+          
+          // Create image metadata for storage and lesson structure
+          generatedImages.forEach((img, index) => {
+            const url = imageUrls[index];
+            if (url) {
+              // Store in generated_images array for database
+              generatedImageData.push({
+                url,
+                prompt: img.prompt,
+                position: img.position
+              });
+              
+              // Add to lesson structure media array
+              const mediaId = `generated-image-${index}`;
+              // Always use full-width for block display (no floating text)
+              const mediaPosition = 'full-width';
+              
+              lessonStructure.media.push({
+                id: mediaId,
+                type: 'image',
+                url,
+                alt: `Generated illustration: ${img.prompt.substring(0, 100)}`,
+                caption: `AI-generated visualization`,
+                position: mediaPosition as 'inline' | 'float-left' | 'float-right' | 'full-width'
+              });
+              
+              // Insert image reference into the target section's content
+              const targetSectionIndex = img.targetSection;
+              
+              logServerMessage(`Processing image ${index + 1}/${generatedImages.length}`, 'info', {
+                imageNumber: index + 1,
+                mediaId,
+                targetSectionIndex,
+                imagePosition: img.position,
+                promptPreview: img.prompt.substring(0, 80),
+                totalSections: lessonStructure.sections.length,
+                sectionTitles: lessonStructure.sections.map((s, i) => ({ 
+                  index: i, 
+                  title: s.content.split('\n')[0].substring(0, 50) 
+                }))
+              });
+              
+              if (targetSectionIndex < lessonStructure.sections.length) {
+                const targetSection = lessonStructure.sections[targetSectionIndex];
+                // Add image reference at the end of the section content
+                targetSection.content += `\n\n[IMAGE:${mediaId}]`;
+                
+                logServerMessage(`✓ Image ${index + 1} reference added successfully`, 'info', {
+                  imageNumber: index + 1,
+                  mediaId,
+                  placedInSection: targetSectionIndex,
+                  sectionId: targetSection.id,
+                  sectionTitle: targetSection.content.split('\n')[0].substring(0, 50),
+                  hasImageReference: targetSection.content.includes(`[IMAGE:${mediaId}]`)
+                });
+              } else {
+                logServerMessage(`⚠ Image ${index + 1} target section out of bounds`, 'warning', {
+                  imageNumber: index + 1,
+                  targetSectionIndex,
+                  totalSections: lessonStructure.sections.length,
+                  availableSections: Array.from({ length: lessonStructure.sections.length }, (_, i) => i)
+                });
+              }
+            }
+          });
+          
+          if (generatedImageData.length === 0) {
+            throw new Error('Failed to upload any images to storage');
+          }
+          
+          logServerMessage("All images uploaded successfully - lesson ready", "info", {
+            lessonId,
+            successCount: generatedImageData.length,
+            expected: options.numberOfImages
+          });
+          
+          // Complete trace successfully
+          await imageTracer.completeTrace({
+            generatedImagesCount: generatedImages.length,
+            uploadedImagesCount: generatedImageData.length,
+            imageUrls: generatedImageData.map(img => img.url)
+          }, imageTracer['modelsTried'] ? Array.from(imageTracer['modelsTried'])[0] || 'unknown' : 'unknown');
+          
+        } catch (imageError) {
+          // Fail trace
+          await imageTracer.failTrace(
+            imageError instanceof Error ? imageError.message : 'Unknown error'
+          );
+          // If images fail, DON'T error the lesson - just mark that images failed
+          imageGenerationFailed = true;
+          imageGenerationError = imageError instanceof Error ? imageError.message : 'Unknown error';
+          
+          logServerError(imageError as Error, {
+            lessonId,
+            operation: "image_generation",
+            numberOfImages: options.numberOfImages
+          });
+          
+          logServerMessage("Image generation failed - continuing with text-only lesson", "warning", {
+            lessonId,
+            error: imageGenerationError,
+            willStillGenerateLesson: true
+          });
+          
+          // Continue to TypeScript generation - don't return early
+        }
+      }
       
       // Generate TypeScript component from structure
+      // This only runs AFTER images are complete (or skipped)
       const tsResult = generateLessonTypeScriptComponent(lessonStructure);
       
       if (!tsResult.success) {
@@ -151,26 +329,38 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
       
       const supabase = createServiceClient();
       
-      // Update lesson with generated content and TypeScript
+      // Add metadata to lesson structure about image generation
+      if (imageGenerationFailed) {
+        lessonStructure.metadata = lessonStructure.metadata || {};
+        lessonStructure.metadata.imageGenerationFailed = true;
+        lessonStructure.metadata.imageGenerationError = imageGenerationError;
+      }
+      
+      // Update lesson with COMPLETE content
+      // Status is set to "generated" even if images failed (text content is still good)
       await supabase
         .from("lessons")
         .update({
-          status: "generated",
+          status: "generated", // Set to generated even if images failed
           content: generatedLesson.content,
           title: generatedLesson.title,
           typescript_code: tsResult.success ? tsResult.tsCode : null,
           javascript_code: tsResult.success ? tsResult.jsCode : null,
           lesson_structure: lessonStructure,
+          generated_images: generatedImageData,
         })
         .eq("id", lessonId);
       
-      logServerMessage("Successfully generated lesson with TypeScript", "info", {
+      logServerMessage("Successfully generated complete lesson", "info", {
         lessonId,
         title: generatedLesson.title,
         contentLength: generatedLesson.content.length,
         sectionsCount: lessonStructure.sections.length,
         mediaCount: lessonStructure.media.length,
-        typescriptGenerated: tsResult.success
+        generatedImagesCount: generatedImageData.length,
+        typescriptGenerated: tsResult.success,
+        hadImages: shouldGenerateImages,
+        imagesFailed: imageGenerationFailed
       });
     } catch (error) {
       logServerError(error as Error, {

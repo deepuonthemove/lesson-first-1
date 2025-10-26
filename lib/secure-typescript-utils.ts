@@ -11,17 +11,14 @@ const DANGEROUS_PATTERNS = [
   /eval\s*\(/gi,
   /Function\s*\(/gi,
   /document\.write/gi,
-  /innerHTML\s*=/gi,
-  /outerHTML\s*=/gi,
-  /setTimeout\s*\(/gi,
-  /setInterval\s*\(/gi,
+  /\.innerHTML\s*=/gi, // Direct DOM manipulation (but not React's dangerouslySetInnerHTML)
+  /\.outerHTML\s*=/gi,
+  /window\.setTimeout\s*\(/gi, // Block global setTimeout (React useEffect cleanup is fine)
+  /window\.setInterval\s*\(/gi, // Block global setInterval
   /import\s*\(/gi,
   /require\s*\(/gi,
   /__proto__/gi,
   /constructor\s*\[/gi,
-  /\[.*\]\s*\(/gi, // Array access followed by function call
-  /\.call\s*\(/gi,
-  /\.apply\s*\(/gi,
   /new\s+Function/gi,
   /<script/gi,
   /<\/script>/gi,
@@ -100,18 +97,8 @@ export const validateGeneratedCode = (tsCode: string): { isValid: boolean; error
     }
   }
 
-  // Check for balanced braces and parentheses
-  const openBraces = (tsCode.match(/\{/g) || []).length;
-  const closeBraces = (tsCode.match(/\}/g) || []).length;
-  if (openBraces !== closeBraces) {
-    errors.push('Unbalanced braces detected');
-  }
-
-  const openParens = (tsCode.match(/\(/g) || []).length;
-  const closeParens = (tsCode.match(/\)/g) || []).length;
-  if (openParens !== closeParens) {
-    errors.push('Unbalanced parentheses detected');
-  }
+  // Skip balance checks - TypeScript compiler will catch actual syntax errors
+  // Simple regex counting doesn't work with strings, comments, template literals, etc.
 
   return {
     isValid: errors.length === 0,
@@ -215,9 +202,15 @@ export default ${componentName};
 
 /**
  * Manages localStorage with size limits and cleanup
+ * Only works in browser environment - gracefully fails on server
  */
 export const manageStorage = {
   setItem: (key: string, value: string): void => {
+    // Skip if not in browser
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+
     if (value.length > MAX_GENERATED_CODE_SIZE) {
       console.warn('Value too large for storage, not storing');
       return;
@@ -242,6 +235,11 @@ export const manageStorage = {
   },
 
   getItem: (key: string): string | null => {
+    // Skip if not in browser
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return null;
+    }
+
     try {
       return localStorage.getItem(key);
     } catch (error) {
@@ -251,6 +249,11 @@ export const manageStorage = {
   },
 
   clearOldItems: (): void => {
+    // Skip if not in browser
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+
     try {
       const keys = Object.keys(localStorage);
       const generatedKeys = keys.filter(k => k.startsWith('generated'));

@@ -6,13 +6,16 @@ This is a two-page full-stack application that allows you to generate and view A
 
 - **Page 1 (/)**: Generate Lessons Page
   - Simple form with text area for lesson outline
+  - Configure grade level, sections, learning style
+  - **NEW:** AI-generated images (1-2 images) for visual learners
   - Generate button to create new lessons
   - Table showing lesson titles, statuses (generating/generated), and access links
 
 - **Page 2 (/lessons/[id])**: View Lesson Page
-  - Displays the full lesson content
+  - Displays the full lesson content with AI-generated images
   - Shows lesson metadata and status
-  - Simple markdown rendering
+  - Dynamic TypeScript-based rendering
+  - Interactive media elements
 
 ## Setup Instructions
 
@@ -103,6 +106,42 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 
 **⚠️ Without these environment variables, the application will not work!**
 
+**For Image Generation (Optional but Recommended):**
+
+**Image generation now supports 3 providers with automatic fallback:**
+
+1. **Pollinations.ai** (FREE, no API key required) ⭐ **RECOMMENDED**
+2. **ImageRouter.io** (optional, requires API key)
+3. **Hugging Face** (optional, FREE API)
+
+Add to your `.env.local` (all optional):
+```bash
+# Image Generation Providers (in priority order)
+# 1. Pollinations.ai - Works out of the box (no key needed!)
+# 2. ImageRouter.io - Optional, for additional reliability
+IMAGEROUTERIO_API_KEY=your_imagerouter_api_key
+# 3. Hugging Face - Optional, FREE with generous limits
+HUGGINGFACE_API_KEY=your_huggingface_api_key
+```
+
+**✨ Quick Start - No API Key Needed!**
+Image generation works immediately with Pollinations.ai - no configuration required!
+
+**Optional: Add More Providers**
+
+**ImageRouter.io (for production reliability):**
+1. Sign up at https://imagerouter.io/
+2. Get your API key from the dashboard
+3. Add `IMAGEROUTERIO_API_KEY` to `.env.local`
+
+**Hugging Face (FREE with Stable Diffusion):**
+1. Go to https://huggingface.co/join and create a free account
+2. Go to Settings → Access Tokens: https://huggingface.co/settings/tokens
+3. Click "New token" → Name it (e.g., "lesson-ai") → Select "read" role
+4. Add `HUGGINGFACE_API_KEY` to `.env.local`
+
+> **Note:** Image generation works without any API keys using Pollinations.ai! Add additional providers for fallback reliability. See MULTI_PROVIDER_IMAGE_GENERATION.md for details.
+
 ### 3. Install Dependencies
 
 ```bash
@@ -128,11 +167,19 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 1. **Lesson Generation**: When you submit a lesson outline, the system:
    - Creates a new lesson record with "generating" status
    - Starts a background process to generate lesson content
+   - **NEW:** If "Reading and Visual" is selected, generates AI images in parallel
    - Updates the status to "generated" when complete
 
-2. **Real-time Updates**: The main page polls for updates every 2 seconds to show when lessons are ready
+2. **Image Generation** (for visual learners):
+   - Select "Reading and Visual" learning style
+   - Choose number of images (1 or 2)
+   - Images are automatically generated from lesson key concepts
+   - Stored in Supabase Storage for fast delivery
+   - Displayed inline with lesson content
 
-3. **Lesson Viewing**: Click "View Lesson" on any generated lesson to see the full content
+3. **Real-time Updates**: The main page polls for updates every 2 seconds to show when lessons are ready
+
+4. **Lesson Viewing**: Click "View Lesson" on any generated lesson to see the full content with images
 
 ## Technical Details
 
@@ -183,6 +230,33 @@ schema.sql                       # Database schema
    - Make sure the file is named exactly `.env.local` (not `.env` or `.env.local.txt`)
    - Restart your development server
    - Check that there are no spaces around the `=` sign in your environment variables
+
+5. **Images not generating**
+   - Images should work out-of-the-box with Pollinations.ai (no API key needed)
+   - Optional: Add `IMAGEROUTERIO_API_KEY` or `HUGGINGFACE_API_KEY` for additional providers
+   - Create Supabase Storage bucket: `lesson-generated-images` (see IMAGE_GENERATION_SETUP.md)
+   - Make the bucket public in Supabase Storage settings
+   - Run the migration: `migrations/add-image-generation.sql`
+   - Check logs to see which providers are being used
+   - Check server logs for detailed error messages
+   - Note: Free tier models may take 10-30 seconds if they need to "warm up"
+
+## Image Generation Setup
+
+For complete image generation setup, see **[IMAGE_GENERATION_SETUP.md](./IMAGE_GENERATION_SETUP.md)**
+
+Quick setup:
+1. **No API key needed!** Pollinations.ai works out of the box
+2. (Optional) Add `IMAGEROUTERIO_API_KEY` or `HUGGINGFACE_API_KEY` for additional providers
+3. Run migration: `migrations/add-image-generation.sql`
+4. Create storage bucket in Supabase Dashboard:
+   - Name: `lesson-generated-images`
+5. See MULTI_PROVIDER_IMAGE_GENERATION.md for provider details
+   - Make it public
+   - Set 10MB file size limit
+5. Test by selecting "Reading and Visual" with 1-2 images
+
+**Uses FREE Stable Diffusion models from Hugging Face!**
 
 ## Customization
 

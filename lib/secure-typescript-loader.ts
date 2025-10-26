@@ -70,6 +70,11 @@ export class SecureTypeScriptLoader {
    */
   public async load(): Promise<boolean> {
     try {
+      // Skip on server-side (TypeScript compilation only works in browser)
+      if (typeof window === 'undefined' || typeof document === 'undefined') {
+        return false;
+      }
+
       // Check if TypeScript is already loaded
       if (this.isTypeScriptLoaded()) {
         this.options.onSuccess?.();
@@ -195,6 +200,9 @@ export class SecureTypeScriptLoader {
    * Checks if TypeScript compiler is loaded and functional
    */
   private isTypeScriptLoaded(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
     return !!(
       window.ts &&
       typeof window.ts.transpile === 'function' &&
@@ -255,8 +263,27 @@ export const validateTypeScriptConfig = (config: any): boolean => {
  * Creates a secure TypeScript compiler configuration
  */
 export const createSecureTypeScriptConfig = () => {
-  if (!window.ts) {
-    throw new Error('TypeScript compiler not loaded');
+  if (typeof window === 'undefined' || !window.ts) {
+    // Return a mock config for server-side - won't be used but prevents errors
+    return {
+      target: 99, // ES2020
+      module: 99, // ESNext
+      jsx: 2, // React
+      esModuleInterop: true,
+      allowSyntheticDefaultImports: true,
+      strict: false,
+      skipLibCheck: true,
+      noImplicitAny: false,
+      noImplicitReturns: false,
+      noUnusedLocals: false,
+      noUnusedParameters: false,
+      noImplicitThis: false,
+      alwaysStrict: false,
+      noEmitOnError: false,
+      noFallthroughCasesInSwitch: false,
+      noUncheckedIndexedAccess: false,
+      exactOptionalPropertyTypes: false
+    };
   }
   
   return {
@@ -288,10 +315,10 @@ export const safeTranspile = (
   config: any = createSecureTypeScriptConfig()
 ): { success: boolean; jsCode?: string; errors?: string[] } => {
   try {
-    if (!window.ts) {
+    if (typeof window === 'undefined' || !window.ts) {
       return {
         success: false,
-        errors: ['TypeScript compiler not loaded']
+        errors: ['TypeScript compiler not loaded - server-side compilation not supported']
       };
     }
 

@@ -260,11 +260,12 @@ export function DynamicLessonRenderer({
 
   // Render media
   const renderMedia = (mediaItem: LessonMedia) => {
+    // All images display as full-width blocks (no floating)
     const positionClasses = {
-      'inline': 'my-6',
-      'float-left': 'float-left mr-4 mb-4 max-w-sm',
-      'float-right': 'float-right ml-4 mb-4 max-w-sm',
-      'full-width': 'my-8 w-full'
+      'inline': 'my-8 w-full flex flex-col items-center',
+      'float-left': 'my-8 w-full flex flex-col items-center',
+      'float-right': 'my-8 w-full flex flex-col items-center',
+      'full-width': 'my-8 w-full flex flex-col items-center'
     };
 
     if (mediaItem.type === 'image' && mediaItem.url) {
@@ -276,10 +277,10 @@ export function DynamicLessonRenderer({
           <img 
             src={mediaItem.url} 
             alt={mediaItem.alt}
-            className="max-w-full h-auto rounded-lg shadow-md"
+            className="max-w-2xl w-full h-auto rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
           />
           {mediaItem.caption && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center italic">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 text-center italic">
               {mediaItem.caption}
             </p>
           )}
@@ -394,9 +395,15 @@ export function DynamicLessonRenderer({
               const mediaId = mediaMatch[1];
               const mediaItem = lessonStructure.media.find(m => m.id === mediaId);
               
+              // Remove the [IMAGE:...] reference from content before rendering
+              const sectionWithoutImageRef = {
+                ...section,
+                content: section.content.replace(/\[IMAGE:[^\]]+\]/, '').trim()
+              };
+              
               return (
                 <React.Fragment key={section.id}>
-                  {renderSection(section)}
+                  {renderSection(sectionWithoutImageRef)}
                   {mediaItem && renderMedia(mediaItem)}
                 </React.Fragment>
               );

@@ -40,6 +40,9 @@ export interface LessonStructure {
     tags?: string[];
     createdAt: string;
     updatedAt: string;
+    imageGenerationFailed?: boolean;
+    imageGenerationError?: string;
+    [key: string]: any; // Allow additional metadata fields
   };
 }
 
