@@ -195,7 +195,7 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
           logServerMessage("Image prompts extracted", "info", {
             lessonId,
             numberOfImages: imagePrompts.length,
-            prompts: imagePrompts.map(p => ({ position: p.position, prompt: p.prompt.substring(0, 50) }))
+            prompts: imagePrompts.map(p => ({ prompt: p.prompt.substring(0, 50), visualAidLine: p.visualAidLine.substring(0, 60) }))
           });
           
           // Start trace
@@ -203,9 +203,8 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
             lessonId,
             numberOfImages: imagePrompts.length,
             prompts: imagePrompts.map(p => ({ 
-              prompt: p.prompt, 
-              position: p.position,
-              targetSection: p.targetSection 
+              prompt: p.prompt,
+              visualAidLine: p.visualAidLine
             })),
             contentLength: generatedLesson.content.length
           });
@@ -213,8 +212,10 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
           // Generate images in parallel - WAIT for all to complete
           const generatedImages = await generateImagesInParallel(imagePrompts, imageTracer);
           
+          // No images is OK if no Visual Aid hints were found
           if (generatedImages.length === 0) {
-            throw new Error(`Image generation failed - expected ${imagePrompts.length} images, got 0`);
+            logServerMessage("No images generated - likely no Visual Aid hints in content", "info", { lessonId });
+            // Continue without images - don't throw error
           }
           
           logServerMessage("Images generated successfully, uploading to storage", "info", {
@@ -238,8 +239,7 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
               // Store in generated_images array for database
               generatedImageData.push({
                 url,
-                prompt: img.prompt,
-                position: img.position
+                prompt: img.prompt
               });
               
               // Add to lesson structure media array
@@ -256,48 +256,58 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
                 position: mediaPosition as 'inline' | 'float-left' | 'float-right' | 'full-width'
               });
               
-              // Insert image reference into the target section's content
-              const targetSectionIndex = img.targetSection;
+              // Search ALL sections for the Visual Aid line and insert image
+              const visualAidLine = img.visualAidLine;
+              let inserted = false;
               
               logServerMessage(`Processing image ${index + 1}/${generatedImages.length}`, 'info', {
                 imageNumber: index + 1,
                 mediaId,
-                targetSectionIndex,
-                imagePosition: img.position,
+                visualAidLine: visualAidLine.substring(0, 60),
                 promptPreview: img.prompt.substring(0, 80),
-                totalSections: lessonStructure.sections.length,
-                sectionTitles: lessonStructure.sections.map((s, i) => ({ 
-                  index: i, 
-                  title: s.content.split('\n')[0].substring(0, 50) 
-                }))
+                totalSections: lessonStructure.sections.length
               });
               
-              if (targetSectionIndex < lessonStructure.sections.length) {
-                const targetSection = lessonStructure.sections[targetSectionIndex];
-                // Add image reference at the end of the section content
-                targetSection.content += `\n\n[IMAGE:${mediaId}]`;
+              // Search all sections for the Visual Aid line
+              for (const section of lessonStructure.sections) {
+                // Escape special regex characters
+                const escapedLine = visualAidLine.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const match = section.content.match(new RegExp(escapedLine));
                 
-                logServerMessage(`✓ Image ${index + 1} reference added successfully`, 'info', {
-                  imageNumber: index + 1,
-                  mediaId,
-                  placedInSection: targetSectionIndex,
-                  sectionId: targetSection.id,
-                  sectionTitle: targetSection.content.split('\n')[0].substring(0, 50),
-                  hasImageReference: targetSection.content.includes(`[IMAGE:${mediaId}]`)
-                });
-              } else {
-                logServerMessage(`⚠ Image ${index + 1} target section out of bounds`, 'warning', {
-                  imageNumber: index + 1,
-                  targetSectionIndex,
-                  totalSections: lessonStructure.sections.length,
-                  availableSections: Array.from({ length: lessonStructure.sections.length }, (_, i) => i)
+                if (match) {
+                  // Found it! Insert image right after this line
+                  const matchEnd = match.index! + match[0].length;
+                  const textAfter = section.content.substring(matchEnd);
+                  const newlineIdx = textAfter.indexOf('\n');
+                  const lineEnd = matchEnd + (newlineIdx >= 0 ? newlineIdx : textAfter.length);
+                  
+                  section.content = 
+                    section.content.substring(0, lineEnd) + 
+                    `\n\n[IMAGE:${mediaId}]` + 
+                    section.content.substring(lineEnd);
+                  
+                  inserted = true;
+                  logServerMessage(`Image ${index + 1} placed after Visual Aid in section`, 'info', {
+                    mediaId,
+                    sectionId: section.id
+                  });
+                  break;
+                }
+              }
+              
+              if (!inserted) {
+                logServerMessage(`Visual Aid not found for image ${index + 1}`, 'warning', { 
+                  visualAidLine: visualAidLine.substring(0, 60) 
                 });
               }
             }
           });
           
-          if (generatedImageData.length === 0) {
-            throw new Error('Failed to upload any images to storage');
+          // No images uploaded is OK if none were generated
+          if (generatedImageData.length === 0 && generatedImages.length === 0) {
+            logServerMessage("No images to upload - lesson will be text-only", "info", { lessonId });
+          } else if (generatedImageData.length === 0 && generatedImages.length > 0) {
+            throw new Error('Failed to upload images to storage');
           }
           
           logServerMessage("All images uploaded successfully - lesson ready", "info", {

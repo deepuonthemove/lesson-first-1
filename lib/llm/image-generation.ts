@@ -123,12 +123,12 @@ export async function generateImage(prompt: string, tracer?: ImageTracer): Promi
 
 /**
  * Generate multiple images in parallel using the first available provider
- * @param prompts Array of prompts with their positions
+ * @param prompts Array of prompts with their positions and optional Visual Aid line
  * @param tracer Optional ImageTracer for logging
  * @returns Array of generated images
  */
 export async function generateImagesInParallel(
-  prompts: { prompt: string; position: 'first-half' | 'second-half' | 'full'; targetSection: number }[],
+  prompts: { prompt: string; visualAidLine: string }[],
   tracer?: ImageTracer
 ): Promise<GeneratedImage[]> {
   const providers = getAvailableProviders();

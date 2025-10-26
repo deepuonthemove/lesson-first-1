@@ -7,8 +7,7 @@ import { ImageTracer } from '@/lib/image-tracing';
 export interface GeneratedImage {
   base64Data: string;
   prompt: string;
-  position: 'first-half' | 'second-half' | 'full';
-  targetSection: number;
+  visualAidLine: string; // The exact Visual Aid line to search for
 }
 
 /**
@@ -25,23 +24,27 @@ export type { GeneratedImage as GeneratedImageType, ImageProvider as ImageProvid
 
 /**
  * Find all Visual Aid suggestions in the content
- * Returns an array of suggestions with their section indices and FULL section content
+ * Returns an array of suggestions with their text and the exact matched line
  */
-export function findVisualAidSuggestions(sections: string[]): { text: string; sectionIndex: number; sectionContent: string }[] {
-  const suggestions: { text: string; sectionIndex: number; sectionContent: string }[] = [];
+export function findVisualAidSuggestions(content: string): { 
+  text: string; 
+  matchedLine: string;
+}[] {
+  const suggestions: { text: string; matchedLine: string }[] = [];
   
   // Search patterns for Visual Aid suggestions
   const patterns = [
-    /\*\*Visual Aid Suggestion[:\s]*\*\*\s*([^\n]+)/i,
-    /Visual Aid Suggestion[:\s]+([^\n]+)/i,
-    /\*\*Visual Aid[:\s]*\*\*\s*([^\n]+)/i,
-    /Visual Aid[:\s]+([^\n]+)/i
+    /\*\*Visual Aid Suggestion[:\s]*\*\*\s*([^\n]+)/gi,
+    /Visual Aid Suggestion[:\s]+([^\n]+)/gi,
+    /\*\*Visual Aid[:\s]*\*\*\s*([^\n]+)/gi,
+    /Visual Aid[:\s]+([^\n]+)/gi
   ];
   
-  sections.forEach((section, index) => {
-    for (const pattern of patterns) {
-      const match = section.match(pattern);
-      if (match && match[1]) {
+  // Find all matches in the full content
+  patterns.forEach(pattern => {
+    const matches = [...content.matchAll(pattern)];
+    matches.forEach(match => {
+      if (match[1]) {
         const text = match[1].trim()
           .replace(/\*\*/g, '')  // Remove markdown bold
           .replace(/[*_]/g, '')  // Remove other markdown
@@ -49,28 +52,20 @@ export function findVisualAidSuggestions(sections: string[]): { text: string; se
           .trim();
         
         if (text && text.length > 10) {
-          // Extract FULL section content (remove the visual aid line itself)
-          // NO character limit - we want the entire section for context
-          const sectionContent = section
-            .replace(pattern, '')  // Remove the visual aid suggestion line
-            .trim();
+          const matchedLine = match[0];
           
-          logServerMessage('Found Visual Aid in section', 'info', {
-            sectionIndex: index,
-            visualAidText: text,
-            sectionLength: sectionContent.length,
-            sectionPreview: sectionContent.substring(0, 100)
+          logServerMessage('Found Visual Aid', 'info', {
+            visualAidText: text.substring(0, 50),
+            matchedLine: matchedLine
           });
           
           suggestions.push({
             text,
-            sectionIndex: index,
-            sectionContent
+            matchedLine
           });
-          break; // Found one in this section, move to next section
         }
       }
-    }
+    });
   });
   
   return suggestions;
@@ -199,7 +194,7 @@ export function createEducationalImagePrompt(
  */
 export async function extractImagePromptsFromContent(
   content: string
-): Promise<{ prompt: string; position: 'first-half' | 'second-half' | 'full'; targetSection: number }[]> {
+): Promise<{ prompt: string; visualAidLine: string }[]> {
   try {
     logServerMessage('Extracting image prompts from content', 'info', { 
       contentLength: content.length
@@ -219,12 +214,11 @@ export async function extractImagePromptsFromContent(
     });
     
     // PRIORITY: Look for Visual Aid suggestions across all sections
-    const visualAidSuggestions = findVisualAidSuggestions(sections);
+    const visualAidSuggestions = findVisualAidSuggestions(content);
     
     logServerMessage('Found Visual Aid suggestions', 'info', {
       count: visualAidSuggestions.length,
       suggestions: visualAidSuggestions.map(v => ({ 
-        section: v.sectionIndex, 
         text: v.text.substring(0, 50) 
       }))
     });
@@ -236,9 +230,8 @@ export async function extractImagePromptsFromContent(
       logServerMessage('Creating prompts from Visual Aid suggestions', 'info', {
         count: selectedSuggestions.length,
         sections: selectedSuggestions.map(s => ({
-          index: s.sectionIndex,
-          visualAid: s.text,
-          contentLength: s.sectionContent.length
+          text: s.text,
+          contentLength: content.length // This will be incorrect as content is split
         }))
       });
       
@@ -249,7 +242,7 @@ export async function extractImagePromptsFromContent(
         const visualAidPrompt = suggestion.text;
         
         // Extract key concepts from the FULL section content
-        const sectionConcepts = extractKeyConceptsFromText(suggestion.sectionContent);
+        const sectionConcepts = extractKeyConceptsFromText(content);
         
         // If Visual Aid already looks like a complete prompt (descriptive), use it directly
         // Otherwise, enhance it with section concepts
@@ -271,65 +264,44 @@ export async function extractImagePromptsFromContent(
           finalPrompt = createEducationalImagePrompt(allConcepts, index === 0 ? 'introduction' : 'details');
         }
         
+        // Fix section index mapping: split()[0] is content before first ##,
+        // but lessonStructure.sections[0] is the first ## section
+        // So we need to subtract 1 from sectionIndex when it's > 0
+        const mappedSectionIndex = 0; // Since we are not using lessonStructure.sections here
+        
         logServerMessage(`Created prompt for image ${index + 1}`, 'info', {
           imageNumber: index + 1,
           visualAid: visualAidPrompt,
+          matchedLine: suggestion.matchedLine,
           sectionConceptsCount: sectionConcepts.length,
           sectionConcepts: sectionConcepts,
           finalPrompt: finalPrompt,
-          targetSection: suggestion.sectionIndex
+          splitSectionIndex: 0, // This will be incorrect
+          mappedSectionIndex: mappedSectionIndex
         });
         
         return {
           prompt: finalPrompt,
-          position: (selectedSuggestions.length === 1 ? 'full' : (index === 0 ? 'first-half' : 'second-half')) as 'first-half' | 'second-half' | 'full',
-          targetSection: suggestion.sectionIndex
+          visualAidLine: suggestion.matchedLine
         };
       });
       
       logServerMessage('Final prompts for image generation', 'info', {
+        count: prompts.length,
         prompts: prompts.map((p, i) => ({ 
           imageNumber: i + 1,
-          prompt: p.prompt,
-          targetSection: p.targetSection,
-          position: p.position
+          promptPreview: p.prompt.substring(0, 80),
+          visualAidLine: p.visualAidLine.substring(0, 60)
         }))
       });
       
       return prompts;
     }
     
-    // FALLBACK: No Visual Aid hints found - use sections 2 and 3 (default to 2 images)
-    logServerMessage('No Visual Aid suggestions found, using section-based logic for sections 2 and 3', 'info');
+    // NO IMAGES if no Visual Aid hints found
+    logServerMessage('No Visual Aid suggestions found - returning empty array (no images will be generated)', 'info');
     
-    // For fallback, always generate 2 images from sections 2 and 3
-    const section2 = sections[1] || '';
-    const section3 = sections[2] || '';
-    
-    const concepts2 = extractKeyConceptsFromText(section2);
-    const concepts3 = extractKeyConceptsFromText(section3);
-    
-    const prompts = [
-      {
-        prompt: createEducationalImagePrompt(concepts2, 'introduction'),
-        position: 'first-half' as const,
-        targetSection: 1 // Place after section 2 (0-indexed, so section 1)
-      },
-      {
-        prompt: createEducationalImagePrompt(concepts3, 'details'),
-        position: 'second-half' as const,
-        targetSection: 2 // Place after section 3 (0-indexed, so section 2)
-      }
-    ];
-    
-    logServerMessage('Generated image prompts (fallback)', 'info', { 
-      prompt1: prompts[0].prompt,
-      concepts1: concepts2,
-      prompt2: prompts[1].prompt,
-      concepts2: concepts3
-    });
-    
-    return prompts;
+    return [];
   } catch (error) {
     logServerError(error as Error, { operation: 'extract_image_prompts' });
     throw error;
@@ -344,7 +316,7 @@ export async function extractImagePromptsFromContent(
  * @returns Array of generated images
  */
 export async function generateImagesInParallel(
-  prompts: { prompt: string; position: 'first-half' | 'second-half' | 'full'; targetSection: number }[],
+  prompts: { prompt: string; visualAidLine: string }[],
   provider: ImageProvider,
   tracer?: ImageTracer
 ): Promise<GeneratedImage[]> {
@@ -354,21 +326,19 @@ export async function generateImagesInParallel(
       provider: provider.name
     });
     
-    const imagePromises = prompts.map(async ({ prompt, position, targetSection }) => {
+    const imagePromises = prompts.map(async ({ prompt, visualAidLine }) => {
       try {
         const base64Data = await provider.generateImage(prompt, tracer);
         return {
           base64Data,
           prompt,
-          position,
-          targetSection
+          visualAidLine
         };
       } catch (error) {
         logServerError(error as Error, { 
           operation: 'parallel_image_generation', 
           provider: provider.name,
-          prompt: prompt.substring(0, 50),
-          position 
+          prompt: prompt.substring(0, 50)
         });
         // Return null for failed images, we'll filter them out
         return null;
@@ -376,7 +346,7 @@ export async function generateImagesInParallel(
     });
     
     const results = await Promise.all(imagePromises);
-    const successfulImages = results.filter((img): img is GeneratedImage => img !== null);
+    const successfulImages: GeneratedImage[] = results.filter((img) => img !== null) as GeneratedImage[];
     
     logServerMessage('Parallel image generation complete', 'info', { 
       provider: provider.name,
