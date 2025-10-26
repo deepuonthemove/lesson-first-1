@@ -124,17 +124,21 @@ export function parseMarkdownToStructure(markdownContent: string, lessonId: stri
     if (line.match(/!\[([^\]]*)\]\(([^)]+)\)/)) {
       const match = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
       if (match) {
-        media.push({
-          id: `image-${media.length}`,
-          type: 'image',
-          url: match[2],
-          alt: match[1],
-          position: 'inline'
-        });
+        const imageUrl = match[2].trim();
+        // Only add image if URL is not empty or blank
+        if (imageUrl && imageUrl !== '') {
+          media.push({
+            id: `image-${media.length}`,
+            type: 'image',
+            url: imageUrl,
+            alt: match[1],
+            position: 'inline'
+          });
 
-        // Add reference in section
-        if (currentSection) {
-          currentSection.content += `\n[IMAGE:image-${media.length - 1}]\n`;
+          // Add reference in section
+          if (currentSection) {
+            currentSection.content += `\n[IMAGE:image-${media.length - 1}]\n`;
+          }
         }
       }
       continue;
@@ -205,6 +209,8 @@ export function generateLessonTypeScriptComponent(
     // Generate TypeScript code
     const tsCode = `
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Lesson interfaces
 interface LessonSection {
@@ -301,12 +307,12 @@ const ${componentName}: React.FC<${componentName}Props> = ({
               />
             ) : (
               <div 
-                className="prose max-w-none"
+                className="prose prose-lg max-w-none dark:prose-invert"
                 onClick={() => editable && setEditingSection(section.id)}
               >
-                {section.content.split('\\n').map((line, idx) => (
-                  <p key={idx}>{line}</p>
-                ))}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {section.content}
+                </ReactMarkdown>
               </div>
             )}
           </div>
@@ -327,42 +333,45 @@ const ${componentName}: React.FC<${componentName}Props> = ({
         );
 
       case 'list':
-        const ListTag = section.metadata?.listType === 'ordered' ? 'ol' : 'ul';
-        const listItems = section.content.split('\\n').filter(line => line.trim());
-        
         return (
           <div key={section.id} className="lesson-section list-section my-4">
             {section.title && (
-              <h4 className="text-lg font-medium mb-2">{section.title}</h4>
+              <h4 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">{section.title}</h4>
             )}
-            <ListTag className="list-disc ml-6 space-y-2">
-              {listItems.map((item, idx) => (
-                <li key={idx}>
-                  {item.replace(/^[-*]\\s+|\\d+\\.\\s+/, '')}
-                </li>
-              ))}
-            </ListTag>
+            <div className="prose prose-lg max-w-none dark:prose-invert">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {section.content}
+              </ReactMarkdown>
+            </div>
           </div>
         );
 
       case 'callout':
         return (
           <div key={section.id} className="lesson-section callout-section my-6">
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded">
               {section.title && (
-                <h4 className="text-lg font-semibold text-blue-900 mb-2">
+                <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
                   {section.title}
                 </h4>
               )}
-              <p className="text-blue-800">{section.content}</p>
+              <div className="prose prose-lg max-w-none dark:prose-invert prose-p:text-blue-800 dark:prose-p:text-blue-200">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {section.content}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
         );
 
       default:
         return (
-          <div key={section.id} className="lesson-section">
-            <p>{section.content}</p>
+          <div key={section.id} className="lesson-section mb-4">
+            <div className="prose prose-lg max-w-none dark:prose-invert">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {section.content}
+              </ReactMarkdown>
+            </div>
           </div>
         );
     }
@@ -630,12 +639,12 @@ export function convertStructureToMarkdown(lessonStructure: LessonStructure): st
         markdown += `${section.content}\n\n`;
     }
 
-    // Add media if referenced
+    // Add media if referenced and has valid URL
     const mediaMatch = section.content.match(/\[IMAGE:([^\]]+)\]/);
     if (mediaMatch) {
       const mediaId = mediaMatch[1];
       const mediaItem = lessonStructure.media.find(m => m.id === mediaId);
-      if (mediaItem && mediaItem.url) {
+      if (mediaItem && mediaItem.url && mediaItem.url.trim() !== '') {
         markdown += `![${mediaItem.alt}](${mediaItem.url})\n\n`;
       }
     }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { deleteAllLessonImages } from "@/lib/supabase/storage";
 
 export async function GET(
   request: NextRequest,
@@ -59,6 +60,10 @@ export async function DELETE(
 
     const supabase = createServiceClient();
     
+    // First, delete all associated images from storage
+    await deleteAllLessonImages(id);
+    
+    // Then delete the lesson from the database
     const { error } = await supabase
       .from("lessons")
       .delete()

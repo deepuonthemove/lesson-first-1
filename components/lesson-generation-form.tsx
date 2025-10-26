@@ -19,7 +19,6 @@ interface LessonGenerationOptions {
   learningStyle: 'reading and visual' | 'reading';
   includeExamples: boolean;
   includeExercises: boolean;
-  numberOfImages?: 1 | 2;
 }
 
 export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerationFormProps) {
@@ -29,7 +28,6 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
   const [learningStyle, setLearningStyle] = useState<'reading and visual' | 'reading'>('reading');
   const [includeExamples, setIncludeExamples] = useState(true);
   const [includeExercises, setIncludeExercises] = useState(true);
-  const [numberOfImages, setNumberOfImages] = useState<1 | 2>(1);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +39,7 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
           sections,
           learningStyle,
           includeExamples,
-          includeExercises,
-          numberOfImages: learningStyle === 'reading and visual' ? numberOfImages : undefined
+          includeExercises
         });
         
         onGenerate({
@@ -51,8 +48,7 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
           sections,
           learningStyle,
           includeExamples,
-          includeExercises,
-          numberOfImages: learningStyle === 'reading and visual' ? numberOfImages : undefined
+          includeExercises
         });
         setOutline("");
       }
@@ -131,26 +127,12 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
               <option value="reading and visual">Reading and Visual (diagrams, charts, images)</option>
               <option value="reading">Reading (text-based content)</option>
             </select>
-          </div>
-
-          {learningStyle === 'reading and visual' && (
-            <div className="space-y-2">
-              <Label htmlFor="numberOfImages">Number of Images</Label>
-              <select
-                id="numberOfImages"
-                value={numberOfImages}
-                onChange={(e) => setNumberOfImages(parseInt(e.target.value) as 1 | 2)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isGenerating}
-              >
-                <option value="1">1 Image</option>
-                <option value="2">2 Images</option>
-              </select>
-              <p className="text-sm text-gray-500">
-                Images will be AI-generated based on lesson content
+            {learningStyle === 'reading and visual' && (
+              <p className="text-sm text-gray-500 mt-2">
+                Images will be AI-generated based on Visual Aid hints in the content
               </p>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="space-y-3">
             <Label>Content Options</Label>

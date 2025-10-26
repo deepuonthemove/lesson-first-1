@@ -15,7 +15,13 @@ export const GET = withSentryErrorHandling(async () => {
       // Check if environment variables are set
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
         logServerMessage("Supabase environment variables not set", "warning");
-        return NextResponse.json({ lessons: [] });
+        return NextResponse.json({ lessons: [] }, {
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        });
       }
 
       const supabase = createServiceClient();
@@ -27,14 +33,34 @@ export const GET = withSentryErrorHandling(async () => {
 
       if (error) {
         logServerError(error as Error, { operation: "fetch_lessons" });
-        return NextResponse.json({ error: "Failed to fetch lessons" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to fetch lessons" }, { 
+          status: 500,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        });
       }
 
       logServerMessage(`Successfully fetched ${lessons?.length || 0} lessons`, "info");
-      return NextResponse.json({ lessons: lessons || [] });
+      return NextResponse.json({ lessons: lessons || [] }, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      });
     } catch (error) {
       logServerError(error as Error, { operation: "fetch_lessons" });
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json({ error: "Internal server error" }, { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      });
     }
   });
 });
@@ -48,8 +74,7 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
         sections = 4,
         learningStyle = 'reading',
         includeExamples = true,
-        includeExercises = true,
-        numberOfImages
+        includeExercises = true
       } = await request.json();
 
       logServerMessage("Creating new lesson", "info", {
@@ -100,8 +125,7 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
         sections,
         learningStyle,
         includeExamples,
-        includeExercises,
-        numberOfImages: learningStyle === 'reading and visual' ? numberOfImages : undefined
+        includeExercises
       });
 
       return NextResponse.json({ lesson });
@@ -144,7 +168,7 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
       // Parse markdown to structured lesson format
       let lessonStructure = parseMarkdownToStructure(generatedLesson.content, lessonId);
       
-      // Generate images if requested (reading and visual with numberOfImages)
+      // Generate images if requested (reading and visual learning style)
       // IMPORTANT: We WAIT for images to complete before marking lesson as "generated"
       // BUT if images fail, we still mark as "generated" with a flag
       let generatedImageData: any[] = [];
@@ -152,34 +176,32 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
       let imageGenerationError = '';
       // Check if any image generation provider is available
       const shouldGenerateImages = options.learningStyle === 'reading and visual' && 
-                                    options.numberOfImages && 
                                     (process.env.HUGGINGFACE_API_KEY || process.env.IMAGEROUTERIO_API_KEY || true); // Pollinations is always available
       
       if (shouldGenerateImages) {
         logServerMessage("Starting image generation - lesson will wait for completion", "info", {
-          lessonId,
-          numberOfImages: options.numberOfImages
+          lessonId
         });
         
         // Create image tracer
         const imageTracer = new ImageTracer(lessonId);
         
         try {
-          // Extract prompts from content
+          // Extract prompts from content (dynamic based on Visual Aid hints)
           const imagePrompts = await extractImagePromptsFromContent(
-            generatedLesson.content,
-            options.numberOfImages!
+            generatedLesson.content
           );
           
           logServerMessage("Image prompts extracted", "info", {
             lessonId,
+            numberOfImages: imagePrompts.length,
             prompts: imagePrompts.map(p => ({ position: p.position, prompt: p.prompt.substring(0, 50) }))
           });
           
           // Start trace
           await imageTracer.startTrace({
             lessonId,
-            numberOfImages: options.numberOfImages,
+            numberOfImages: imagePrompts.length,
             prompts: imagePrompts.map(p => ({ 
               prompt: p.prompt, 
               position: p.position,
@@ -192,13 +214,13 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
           const generatedImages = await generateImagesInParallel(imagePrompts, imageTracer);
           
           if (generatedImages.length === 0) {
-            throw new Error(`Image generation failed - expected ${options.numberOfImages} images, got 0`);
+            throw new Error(`Image generation failed - expected ${imagePrompts.length} images, got 0`);
           }
           
           logServerMessage("Images generated successfully, uploading to storage", "info", {
             lessonId,
             count: generatedImages.length,
-            expected: options.numberOfImages
+            expected: imagePrompts.length
           });
           
           // Upload images to Supabase Storage in parallel - WAIT for all uploads
@@ -281,7 +303,7 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
           logServerMessage("All images uploaded successfully - lesson ready", "info", {
             lessonId,
             successCount: generatedImageData.length,
-            expected: options.numberOfImages
+            expected: imagePrompts.length
           });
           
           // Complete trace successfully
@@ -302,8 +324,7 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
           
           logServerError(imageError as Error, {
             lessonId,
-            operation: "image_generation",
-            numberOfImages: options.numberOfImages
+            operation: "image_generation"
           });
           
           logServerMessage("Image generation failed - continuing with text-only lesson", "warning", {

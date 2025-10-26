@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { type LessonStructure, type LessonSection, type LessonMedia } from '@/lib/lesson-typescript-generator';
 
 interface DynamicLessonRendererProps {
@@ -174,9 +176,9 @@ export function DynamicLessonRenderer({
                 className={`prose prose-lg max-w-none dark:prose-invert ${editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded' : ''}`}
                 onClick={() => editable && setEditingSection(section.id)}
               >
-                {section.content.split('\n').map((line, idx) => (
-                  line.trim() ? <p key={idx} className="mb-3">{line}</p> : <br key={idx} />
-                ))}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {section.content}
+                </ReactMarkdown>
               </div>
             )}
           </div>
@@ -199,9 +201,6 @@ export function DynamicLessonRenderer({
         );
 
       case 'list':
-        const ListTag = section.metadata?.listType === 'ordered' ? 'ol' : 'ul';
-        const listItems = section.content.split('\n').filter(line => line.trim());
-        
         return (
           <div key={section.id} className="lesson-section list-section my-4">
             {section.title && (
@@ -209,13 +208,11 @@ export function DynamicLessonRenderer({
                 {section.title}
               </h4>
             )}
-            <ListTag className={`${section.metadata?.listType === 'ordered' ? 'list-decimal' : 'list-disc'} ml-6 space-y-2`}>
-              {listItems.map((item, idx) => (
-                <li key={idx} className="text-gray-700 dark:text-gray-300">
-                  {item.replace(/^[-*]\s+|\d+\.\s+/, '')}
-                </li>
-              ))}
-            </ListTag>
+            <div className="prose prose-lg max-w-none dark:prose-invert">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {section.content}
+              </ReactMarkdown>
+            </div>
           </div>
         );
 
@@ -228,7 +225,11 @@ export function DynamicLessonRenderer({
                   {section.title}
                 </h4>
               )}
-              <p className="text-blue-800 dark:text-blue-200">{section.content}</p>
+              <div className="prose prose-lg max-w-none dark:prose-invert prose-p:text-blue-800 dark:prose-p:text-blue-200">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {section.content}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
         );
@@ -242,9 +243,11 @@ export function DynamicLessonRenderer({
                   📝 {section.title}
                 </h4>
               )}
-              <p className="text-green-800 dark:text-green-200 whitespace-pre-wrap">
-                {section.content}
-              </p>
+              <div className="prose prose-lg max-w-none dark:prose-invert prose-p:text-green-800 dark:prose-p:text-green-200">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {section.content}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
         );
@@ -252,7 +255,11 @@ export function DynamicLessonRenderer({
       default:
         return (
           <div key={section.id} className="lesson-section mb-4">
-            <p className="text-gray-700 dark:text-gray-300">{section.content}</p>
+            <div className="prose prose-lg max-w-none dark:prose-invert">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {section.content}
+              </ReactMarkdown>
+            </div>
           </div>
         );
     }
@@ -260,6 +267,14 @@ export function DynamicLessonRenderer({
 
   // Render media
   const renderMedia = (mediaItem: LessonMedia) => {
+    // Skip rendering if URL is missing or blank
+    if (mediaItem.type === 'image' && (!mediaItem.url || mediaItem.url.trim() === '')) {
+      return null;
+    }
+    if (mediaItem.type === 'svg' && (!mediaItem.svgContent || mediaItem.svgContent.trim() === '')) {
+      return null;
+    }
+
     // All images display as full-width blocks (no floating)
     const positionClasses = {
       'inline': 'my-8 w-full flex flex-col items-center',
@@ -401,10 +416,16 @@ export function DynamicLessonRenderer({
                 content: section.content.replace(/\[IMAGE:[^\]]+\]/, '').trim()
               };
               
+              // Only render media if it exists and has valid content
+              const shouldRenderMedia = mediaItem && (
+                (mediaItem.type === 'image' && mediaItem.url && mediaItem.url.trim() !== '') ||
+                (mediaItem.type === 'svg' && mediaItem.svgContent && mediaItem.svgContent.trim() !== '')
+              );
+              
               return (
                 <React.Fragment key={section.id}>
                   {renderSection(sectionWithoutImageRef)}
-                  {mediaItem && renderMedia(mediaItem)}
+                  {shouldRenderMedia && renderMedia(mediaItem)}
                 </React.Fragment>
               );
             }

@@ -193,17 +193,16 @@ export function createEducationalImagePrompt(
 /**
  * Extract key concepts and create image generation prompts from lesson content
  * @param content The full lesson content in markdown format
- * @param count Number of images to generate (1 or 2)
  * @returns Array of prompts for image generation with section targets
+ * If Visual Aid hints are found, returns one prompt per hint (no limit).
+ * If no Visual Aid hints, returns prompts for sections 2 and 3 (2 images).
  */
 export async function extractImagePromptsFromContent(
-  content: string, 
-  count: 1 | 2
+  content: string
 ): Promise<{ prompt: string; position: 'first-half' | 'second-half' | 'full'; targetSection: number }[]> {
   try {
     logServerMessage('Extracting image prompts from content', 'info', { 
-      contentLength: content.length, 
-      imageCount: count 
+      contentLength: content.length
     });
     
     // Split content into sections by headers (## or ###)
@@ -230,9 +229,9 @@ export async function extractImagePromptsFromContent(
       }))
     });
     
-    // If we have enough Visual Aid suggestions, use them!
-    if (visualAidSuggestions.length >= count) {
-      const selectedSuggestions = visualAidSuggestions.slice(0, count);
+    // If we have Visual Aid suggestions, use ALL of them!
+    if (visualAidSuggestions.length > 0) {
+      const selectedSuggestions = visualAidSuggestions;
       
       logServerMessage('Creating prompts from Visual Aid suggestions', 'info', {
         count: selectedSuggestions.length,
@@ -283,7 +282,7 @@ export async function extractImagePromptsFromContent(
         
         return {
           prompt: finalPrompt,
-          position: (count === 1 ? 'full' : (index === 0 ? 'first-half' : 'second-half')) as 'first-half' | 'second-half' | 'full',
+          position: (selectedSuggestions.length === 1 ? 'full' : (index === 0 ? 'first-half' : 'second-half')) as 'first-half' | 'second-half' | 'full',
           targetSection: suggestion.sectionIndex
         };
       });
@@ -300,59 +299,37 @@ export async function extractImagePromptsFromContent(
       return prompts;
     }
     
-    // FALLBACK: Use the old logic (sections 2 and 3)
-    logServerMessage('Not enough Visual Aid suggestions, using section-based logic', 'info');
+    // FALLBACK: No Visual Aid hints found - use sections 2 and 3 (default to 2 images)
+    logServerMessage('No Visual Aid suggestions found, using section-based logic for sections 2 and 3', 'info');
     
-    if (count === 1) {
-      // For 1 image, extract from sections 2 and 3 combined, place after section 3
-      const section2 = sections[1] || '';
-      const section3 = sections[2] || '';
-      const combinedContent = `${section2}\n${section3}`;
-      
-      const keyConcepts = extractKeyConceptsFromText(combinedContent);
-      const prompt = createEducationalImagePrompt(keyConcepts, 'overview');
-      
-      logServerMessage('Generated image prompt (fallback)', 'info', { 
-        prompt,
-        concepts: keyConcepts,
-        targetSection: 2
-      });
-      
-      return [{
-        prompt,
-        position: 'full',
+    // For fallback, always generate 2 images from sections 2 and 3
+    const section2 = sections[1] || '';
+    const section3 = sections[2] || '';
+    
+    const concepts2 = extractKeyConceptsFromText(section2);
+    const concepts3 = extractKeyConceptsFromText(section3);
+    
+    const prompts = [
+      {
+        prompt: createEducationalImagePrompt(concepts2, 'introduction'),
+        position: 'first-half' as const,
+        targetSection: 1 // Place after section 2 (0-indexed, so section 1)
+      },
+      {
+        prompt: createEducationalImagePrompt(concepts3, 'details'),
+        position: 'second-half' as const,
         targetSection: 2 // Place after section 3 (0-indexed, so section 2)
-      }];
-    } else {
-      // For 2 images, extract from section 2 and section 3 separately
-      const section2 = sections[1] || '';
-      const section3 = sections[2] || '';
-      
-      const concepts2 = extractKeyConceptsFromText(section2);
-      const concepts3 = extractKeyConceptsFromText(section3);
-      
-      const prompts = [
-        {
-          prompt: createEducationalImagePrompt(concepts2, 'introduction'),
-          position: 'first-half' as const,
-          targetSection: 1 // Place after section 2 (0-indexed, so section 1)
-        },
-        {
-          prompt: createEducationalImagePrompt(concepts3, 'details'),
-          position: 'second-half' as const,
-          targetSection: 2 // Place after section 3 (0-indexed, so section 2)
-        }
-      ];
-      
-      logServerMessage('Generated image prompts (fallback)', 'info', { 
-        prompt1: prompts[0].prompt,
-        concepts1: concepts2,
-        prompt2: prompts[1].prompt,
-        concepts2: concepts3
-      });
-      
-      return prompts;
-    }
+      }
+    ];
+    
+    logServerMessage('Generated image prompts (fallback)', 'info', { 
+      prompt1: prompts[0].prompt,
+      concepts1: concepts2,
+      prompt2: prompts[1].prompt,
+      concepts2: concepts3
+    });
+    
+    return prompts;
   } catch (error) {
     logServerError(error as Error, { operation: 'extract_image_prompts' });
     throw error;
