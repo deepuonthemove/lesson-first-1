@@ -159,9 +159,11 @@ export function DynamicLessonRenderer({
         return (
           <div key={section.id} className="lesson-section text-section mb-6">
             {section.title && (
-              <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                {section.title}
-              </h3>
+              <div className="section-heading-bounding-box">
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                  {section.title}
+                </h3>
+              </div>
             )}
             {isEditing ? (
               <textarea
@@ -188,9 +190,11 @@ export function DynamicLessonRenderer({
         return (
           <div key={section.id} className="lesson-section code-section my-6">
             {section.title && (
-              <h4 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">
-                {section.title}
-              </h4>
+              <div className="section-heading-bounding-box">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  {section.title}
+                </h4>
+              </div>
             )}
             <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
               <code className={`language-${section.metadata?.language || 'plaintext'}`}>
@@ -204,9 +208,11 @@ export function DynamicLessonRenderer({
         return (
           <div key={section.id} className="lesson-section list-section my-4">
             {section.title && (
-              <h4 className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">
-                {section.title}
-              </h4>
+              <div className="section-heading-bounding-box">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  {section.title}
+                </h4>
+              </div>
             )}
             <div className="prose prose-lg max-w-none dark:prose-invert">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -221,9 +227,11 @@ export function DynamicLessonRenderer({
           <div key={section.id} className="lesson-section callout-section my-6">
             <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded">
               {section.title && (
-                <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                  {section.title}
-                </h4>
+                <div className="section-heading-bounding-box mb-3">
+                  <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                    {section.title}
+                  </h4>
+                </div>
               )}
               <div className="prose prose-lg max-w-none dark:prose-invert prose-p:text-blue-800 dark:prose-p:text-blue-200">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -239,9 +247,11 @@ export function DynamicLessonRenderer({
           <div key={section.id} className="lesson-section exercise-section my-6">
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 p-6 rounded-lg">
               {section.title && (
-                <h4 className="text-lg font-semibold text-green-900 dark:text-green-100 mb-3">
-                  📝 {section.title}
-                </h4>
+                <div className="section-heading-bounding-box mb-3">
+                  <h4 className="text-lg font-semibold text-green-900 dark:text-green-100">
+                    📝 {section.title}
+                  </h4>
+                </div>
               )}
               <div className="prose prose-lg max-w-none dark:prose-invert prose-p:text-green-800 dark:prose-p:text-green-200">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -367,39 +377,41 @@ export function DynamicLessonRenderer({
 
   return (
     <div className="lesson-container max-w-4xl mx-auto px-4 py-8">
-      {/* Lesson Content with Bounding Box */}
-      <div className="lesson-bounding-box">
-        {/* Lesson Header */}
-        <header className="lesson-header mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">
-            {lessonStructure.title}
-          </h1>
-          {lessonStructure.subtitle && (
-            <h2 className="text-xl text-gray-600 dark:text-gray-400 mb-4">
-              {lessonStructure.subtitle}
-            </h2>
-          )}
-          <div className="flex gap-2 flex-wrap">
-            {lessonStructure.metadata.difficulty && (
-              <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full text-sm">
-                {lessonStructure.metadata.difficulty}
-              </span>
+      {/* Outer Bounding Box for Entire Lesson */}
+      <div className="lesson-outer-bounding-box">
+        {/* Lesson Title and Headings with Inner Bounding Box */}
+        <div className="lesson-title-bounding-box">
+          <header className="lesson-header">
+            <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+              {lessonStructure.title}
+            </h1>
+            {lessonStructure.subtitle && (
+              <h2 className="text-xl text-gray-600 dark:text-gray-400 mb-4">
+                {lessonStructure.subtitle}
+              </h2>
             )}
-            {lessonStructure.metadata.duration && (
-              <span className="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-3 py-1 rounded-full text-sm">
-                ⏱️ {lessonStructure.metadata.duration} min
-              </span>
-            )}
-            {lessonStructure.metadata.tags?.map(tag => (
-              <span 
-                key={tag}
-                className="inline-block bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        </header>
+            <div className="flex gap-2 flex-wrap">
+              {lessonStructure.metadata.difficulty && (
+                <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full text-sm">
+                  {lessonStructure.metadata.difficulty}
+                </span>
+              )}
+              {lessonStructure.metadata.duration && (
+                <span className="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-3 py-1 rounded-full text-sm">
+                  ⏱️ {lessonStructure.metadata.duration} min
+                </span>
+              )}
+              {lessonStructure.metadata.tags?.map(tag => (
+                <span 
+                  key={tag}
+                  className="inline-block bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </header>
+        </div>
 
         {/* Lesson Content */}
         <div className="lesson-content space-y-6">

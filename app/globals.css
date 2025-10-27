@@ -87,16 +87,44 @@
     }
   }
 
-  /* Lesson Bounding Box */
-  .lesson-bounding-box {
+  /* Lesson Outer Bounding Box */
+  .lesson-outer-bounding-box {
     border: 2px solid hsl(var(--border));
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     padding: 2rem;
     background: hsl(var(--card));
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
 
-  .dark .lesson-bounding-box {
+  .dark .lesson-outer-bounding-box {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  }
+
+  /* Lesson Title Bounding Box */
+  .lesson-title-bounding-box {
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    background: hsl(var(--muted));
+    margin-bottom: 2rem;
+  }
+
+  .dark .lesson-title-bounding-box {
+    background: hsl(var(--muted));
+  }
+
+  /* Section Heading Bounding Box */
+  .section-heading-bounding-box {
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    background: hsl(var(--accent));
+    margin-bottom: 1rem;
+    display: block;
+    width: 100%;
+  }
+
+  .dark .section-heading-bounding-box {
+    background: hsl(var(--accent));
   }
 }
