@@ -3,7 +3,7 @@
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
 
 # Suppress secret scanner warnings for Supabase public keys
 # These are anon/publishable keys designed to be public and are protected by RLS
@@ -17,7 +17,16 @@
   NEXT_PUBLIC_SUPABASE_URL = true
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = true
 
-# Additional Netlify configuration for Next.js
+# Netlify Functions configuration for Next.js API routes
+[functions]
+  directory = ".next/server"
+
+# Redirects for Next.js App Router
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
