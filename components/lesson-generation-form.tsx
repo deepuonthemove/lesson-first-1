@@ -74,7 +74,7 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
               id="outline"
               value={outline}
               onChange={(e) => setOutline(e.target.value)}
-              placeholder="Enter your lesson outline here... (e.g., 'Introduction to React Hooks', 'Machine Learning Fundamentals', etc.)"
+              placeholder="Enter your lesson outline here... (e.g., 'A one-pager on how to divide with long division')"
               className="w-full min-h-[120px] p-3 border border-gray-300 rounded-md resize-vertical focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={isGenerating}
             />
