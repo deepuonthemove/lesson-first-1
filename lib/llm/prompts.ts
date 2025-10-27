@@ -52,12 +52,18 @@ export function getUserPrompt(options: LessonGenerationOptions): string {
     ? `
 IMPORTANT - Visual Aid Hints:
 Since this is a "reading and visual" lesson, you MUST include Visual Aid hints throughout the content.
-Add a MAXIMUM of 3 Visual Aid hints in the most important sections.
-For each hint, use the format: **Visual Aid Suggestion:** [description of what image would help]
-For example: "**Visual Aid Suggestion:** A colorful diagram showing the water cycle with arrows indicating evaporation, condensation, and precipitation"
+Add EXACTLY 3 Visual Aid hints in the most important sections.
+CRITICAL: Use this EXACT format for each hint (including the double asterisks):
+**Visual Aid Suggestion:** [description of what image would help]
+
+Examples:
+**Visual Aid Suggestion:** A colorful diagram showing the water cycle with arrows indicating evaporation, condensation, and precipitation
+**Visual Aid Suggestion:** A photo of different types of vegetables arranged by color groups
+**Visual Aid Suggestion:** A simple chart showing the main nutrients found in vegetables
+
 These hints will be used to generate AI images, so make them descriptive and educational.
 Place Visual Aid hints where images would genuinely help students understand the concept better.
-Remember: Maximum 3 Visual Aid hints total.`
+Remember: EXACTLY 3 Visual Aid hints total, each using the exact format above.`
     : '';
 
   return `Create a comprehensive lesson based on this outline: "${outline}"
@@ -99,17 +105,18 @@ export function getCombinedPrompt(options: LessonGenerationOptions): string {
     ? `
 IMPORTANT - Visual Aid Hints:
 Since this is a "reading and visual" lesson, you MUST include Visual Aid hints throughout the content.
-Add a MAXIMUM of 3 Visual Aid hints in the most important sections.
-IMPORTANT: Each Visual Aid hint MUST be on its own separate line.
-Use this EXACT format (each on its own line):
+Add EXACTLY 3 Visual Aid hints in the most important sections.
+CRITICAL: Use this EXACT format for each hint (including the double asterisks):
 **Visual Aid Suggestion:** [description of what image would help]
 
-For example:
+Examples:
 **Visual Aid Suggestion:** A colorful diagram showing the water cycle with arrows indicating evaporation, condensation, and precipitation
+**Visual Aid Suggestion:** A photo of different types of vegetables arranged by color groups
+**Visual Aid Suggestion:** A simple chart showing the main nutrients found in vegetables
 
 These hints will be used to generate AI images, so make them descriptive and educational.
 Place Visual Aid hints where images would genuinely help students understand the concept better.
-Remember: Maximum 3 Visual Aid hints total, each on its own line.`
+Remember: EXACTLY 3 Visual Aid hints total, each using the exact format above.`
     : '';
 
   return `You are an expert educational content creator. Create a comprehensive lesson based on this outline: "${outline}"

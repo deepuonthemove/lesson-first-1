@@ -25,48 +25,55 @@ export type { GeneratedImage as GeneratedImageType, ImageProvider as ImageProvid
 /**
  * Find all Visual Aid suggestions in the content
  * Returns an array of suggestions with their text and the exact matched line
+ * Enforces a maximum of 3 suggestions as per the prompt requirement
  */
 export function findVisualAidSuggestions(content: string): { 
   text: string; 
   matchedLine: string;
 }[] {
   const suggestions: { text: string; matchedLine: string }[] = [];
+  const seenTexts = new Set<string>(); // For deduplication
   
-  // Search patterns for Visual Aid suggestions
-  const patterns = [
-    /\*\*Visual Aid Suggestion[:\s]*\*\*\s*([^\n]+)/gi,
-    /Visual Aid Suggestion[:\s]+([^\n]+)/gi,
-    /\*\*Visual Aid[:\s]*\*\*\s*([^\n]+)/gi,
-    /Visual Aid[:\s]+([^\n]+)/gi
-  ];
+  // Consolidated pattern that matches all variations of Visual Aid suggestions
+  // This single pattern handles both **Visual Aid Suggestion:** and Visual Aid Suggestion:** formats
+  const pattern = /(?:\*\*)?Visual Aid Suggestion[:\s]*(?:\*\*)?\s*([^\n]+)/gi;
   
-  // Find all matches in the full content
-  patterns.forEach(pattern => {
-    const matches = [...content.matchAll(pattern)];
-    matches.forEach(match => {
-      if (match[1]) {
-        const text = match[1].trim()
-          .replace(/\*\*/g, '')  // Remove markdown bold
-          .replace(/[*_]/g, '')  // Remove other markdown
-          .replace(/\.$/, '')    // Remove trailing period
-          .trim();
+  const matches = [...content.matchAll(pattern)];
+  
+  for (const match of matches) {
+    if (match[1]) {
+      const text = match[1].trim()
+        .replace(/\*\*/g, '')  // Remove markdown bold
+        .replace(/[*_]/g, '')  // Remove other markdown
+        .replace(/\.$/, '')    // Remove trailing period
+        .trim();
+      
+      // Skip if too short or already seen (deduplication)
+      if (text && text.length > 10 && !seenTexts.has(text)) {
+        seenTexts.add(text);
         
-        if (text && text.length > 10) {
-          const matchedLine = match[0];
-          
-          logServerMessage('Found Visual Aid', 'info', {
-            visualAidText: text.substring(0, 50),
-            matchedLine: matchedLine
+        const matchedLine = match[0];
+        
+        logServerMessage('Found Visual Aid', 'info', {
+          visualAidText: text.substring(0, 50),
+          matchedLine: matchedLine
+        });
+        
+        suggestions.push({
+          text,
+          matchedLine
+        });
+        
+        // Enforce maximum of 3 suggestions as per prompt requirement
+        if (suggestions.length >= 3) {
+          logServerMessage('Reached maximum of 3 Visual Aid suggestions', 'info', {
+            totalFound: suggestions.length
           });
-          
-          suggestions.push({
-            text,
-            matchedLine
-          });
+          break;
         }
       }
-    });
-  });
+    }
+  }
   
   return suggestions;
 }
