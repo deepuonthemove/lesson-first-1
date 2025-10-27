@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { LessonsTable, Lesson } from "@/components/lessons-table";
 import { useRouter } from "next/navigation";
 
 interface ClientLessonsTableProps {
   lessons: Lesson[];
+  onOptimisticLessonAdded?: (callback: (lesson: Lesson) => void) => void;
 }
 
-export function ClientLessonsTable({ lessons: initialLessons }: ClientLessonsTableProps) {
+export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLessonAdded }: ClientLessonsTableProps) {
   const [lessons, setLessons] = useState<Lesson[]>(initialLessons);
   const [, setDeletingLessonId] = useState<string | null>(null);
   const router = useRouter();
@@ -18,10 +19,40 @@ export function ClientLessonsTable({ lessons: initialLessons }: ClientLessonsTab
     setLessons(initialLessons);
   }, [initialLessons]);
 
+  // Method to add a lesson optimistically
+  const addOptimisticLesson = useCallback((lesson: Lesson) => {
+    setLessons(prevLessons => {
+      // Check if lesson already exists to prevent duplicates
+      const exists = prevLessons.some(l => l.id === lesson.id);
+      if (exists) {
+        return prevLessons;
+      }
+      // Add to the beginning of the list
+      return [lesson, ...prevLessons];
+    });
+  }, []);
+
+  // Method to update lesson status
+  const updateLessonStatus = useCallback((lessonId: string, status: Lesson["status"]) => {
+    setLessons(prevLessons => 
+      prevLessons.map(lesson => 
+        lesson.id === lessonId ? { ...lesson, status } : lesson
+      )
+    );
+  }, []);
+
+  // Expose methods to parent component
+  useEffect(() => {
+    if (onOptimisticLessonAdded) {
+      onOptimisticLessonAdded(addOptimisticLesson);
+    }
+  }, [onOptimisticLessonAdded, addOptimisticLesson]);
+
   const handleLessonDeleted = async (lessonId: string) => {
     setDeletingLessonId(lessonId);
     try {
-      const response = await fetch(`/api/lessons/${lessonId}`, {
+      const timestamp = Date.now();
+      const response = await fetch(`/api/lessons/${lessonId}?t=${timestamp}`, {
         method: 'DELETE',
       });
 
@@ -48,6 +79,7 @@ export function ClientLessonsTable({ lessons: initialLessons }: ClientLessonsTab
     <LessonsTable 
       lessons={lessons} 
       onLessonDeleted={handleLessonDeleted}
+      onLessonStatusUpdate={updateLessonStatus}
     />
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LessonGenerationForm } from "@/components/lesson-generation-form";
 import { useRouter } from "next/navigation";
+import { Lesson } from "@/components/lessons-table";
 
 interface LessonGenerationOptions {
   outline: string;
@@ -13,7 +14,11 @@ interface LessonGenerationOptions {
   includeExercises: boolean;
 }
 
-export function ClientLessonGenerationForm() {
+interface ClientLessonGenerationFormProps {
+  onOptimisticLessonAdded?: (lesson: Lesson) => void;
+}
+
+export function ClientLessonGenerationForm({ onOptimisticLessonAdded }: ClientLessonGenerationFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
 
@@ -31,13 +36,16 @@ export function ClientLessonGenerationForm() {
       if (response.ok) {
         const data = await response.json();
         
-        // Immediately refresh the page to show the new lesson
-        router.refresh();
+        // Immediately add the lesson optimistically to the table
+        if (onOptimisticLessonAdded) {
+          onOptimisticLessonAdded(data.lesson);
+        }
         
         // Poll for updates every 2 seconds until generation is complete
         const pollForUpdates = async () => {
           try {
-            const updateResponse = await fetch("/api/lessons");
+            const timestamp = Date.now();
+            const updateResponse = await fetch(`/api/lessons?t=${timestamp}`);
             if (updateResponse.ok) {
               const updateData = await updateResponse.json();
               const updatedLessons = updateData.lessons || [];

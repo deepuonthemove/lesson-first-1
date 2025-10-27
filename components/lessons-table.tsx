@@ -18,9 +18,10 @@ export interface Lesson {
 interface LessonsTableProps {
   lessons: Lesson[];
   onLessonDeleted?: (lessonId: string) => void;
+  onLessonStatusUpdate?: (lessonId: string, status: Lesson["status"]) => void;
 }
 
-export function LessonsTable({ lessons, onLessonDeleted }: LessonsTableProps) {
+export function LessonsTable({ lessons, onLessonDeleted, onLessonStatusUpdate }: LessonsTableProps) {
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
@@ -51,7 +52,11 @@ export function LessonsTable({ lessons, onLessonDeleted }: LessonsTableProps) {
   const getStatusBadge = (status: Lesson["status"]) => {
     switch (status) {
       case "generating":
-        return <Badge variant="secondary">Generating</Badge>;
+        return (
+          <Badge variant="secondary" className="generating-badge">
+            Generating<span className="generating-dots">...</span>
+          </Badge>
+        );
       case "generated":
         return <Badge variant="default">Generated</Badge>;
       case "error":
@@ -119,6 +124,11 @@ export function LessonsTable({ lessons, onLessonDeleted }: LessonsTableProps) {
                   </td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
+                      {lesson.status === "generating" && (
+                        <Badge variant="secondary" className="animate-pulse">
+                          Generating...
+                        </Badge>
+                      )}
                       {lesson.status === "generated" || lesson.status === "error" ? (
                         <>
                           {lesson.status === "generated" && (
@@ -165,9 +175,7 @@ export function LessonsTable({ lessons, onLessonDeleted }: LessonsTableProps) {
                             </Button>
                           )}
                         </>
-                      ) : (
-                        <span className="text-gray-400">Generating...</span>
-                      )}
+                      ) : null}
                     </div>
                   </td>
                 </tr>

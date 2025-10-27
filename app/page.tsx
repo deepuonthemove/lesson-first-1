@@ -1,5 +1,4 @@
-import { ClientLessonGenerationForm } from "@/components/client-lesson-generation-form";
-import { ClientLessonsTable } from "@/components/client-lessons-table";
+import { LessonCoordinator } from "@/components/lesson-coordinator";
 import { SetupWarning } from "@/components/setup-warning";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import Link from "next/link";
@@ -41,9 +40,7 @@ export default async function Home() {
           <div className="flex flex-col gap-8 items-center">
             {setupError && <SetupWarning />}
             
-            <ClientLessonGenerationForm />
-            
-            <ClientLessonsTable lessons={lessons || []} />
+            <LessonCoordinator lessons={lessons || []} />
           </div>
         </div>
 
