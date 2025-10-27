@@ -76,7 +76,7 @@ Requirements:
 - Include Exercises: ${includeExercises ? 'Yes' : 'No'}${visualAidInstruction}
 
 Please generate a complete lesson with:
-1. A compelling title (start with #). Dont start the title with Generated.
+1. A compelling title (start with #). Dont start the title with Generated Lesson.
 2. Clear learning objectives
 3. Structured content with examples
 4. Key concepts highlighted
@@ -129,7 +129,7 @@ Requirements:
 - Include Exercises: ${includeExercises ? 'Yes' : 'No'}${visualAidInstruction}
 
 Please generate a complete lesson with:
-1. A compelling title (start with #). Dont start the title with Generated.
+1. A compelling title (start with #). Dont start the title with Generated Lesson.
 2. Clear learning objectives
 3. Structured content with examples
 4. Key concepts highlighted

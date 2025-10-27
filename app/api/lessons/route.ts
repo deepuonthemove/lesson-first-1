@@ -233,8 +233,14 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
           const imageUrls = await uploadImagesInParallel(uploadData, lessonId);
           
           // Create image metadata for storage and lesson structure
-          generatedImages.forEach((img, index) => {
-            const url = imageUrls[index];
+          // Map each generated image to its original prompt index
+          const imageIndexMap = new Map<string, number>();
+          imagePrompts.forEach((prompt, index) => {
+            imageIndexMap.set(prompt.prompt, index);
+          });
+          
+          generatedImages.forEach((img, generatedIndex) => {
+            const url = imageUrls[generatedIndex];
             if (url) {
               // Store in generated_images array for database
               generatedImageData.push({
@@ -242,8 +248,10 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
                 prompt: img.prompt
               });
               
-              // Add to lesson structure media array
-              const mediaId = `generated-image-${index}`;
+              // Use the original prompt index for consistent media IDs
+              const originalPromptIndex = imageIndexMap.get(img.prompt) ?? generatedIndex;
+              const mediaId = `generated-image-${originalPromptIndex}`;
+              
               // Always use full-width for block display (no floating text)
               const mediaPosition = 'full-width';
               
@@ -260,19 +268,56 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
               const visualAidLine = img.visualAidLine;
               let inserted = false;
               
-              logServerMessage(`Processing image ${index + 1}/${generatedImages.length}`, 'info', {
-                imageNumber: index + 1,
+              logServerMessage(`Processing image ${generatedIndex + 1}/${generatedImages.length}`, 'info', {
+                imageNumber: generatedIndex + 1,
                 mediaId,
                 visualAidLine: visualAidLine.substring(0, 60),
                 promptPreview: img.prompt.substring(0, 80),
-                totalSections: lessonStructure.sections.length
+                totalSections: lessonStructure.sections.length,
+                sectionContents: lessonStructure.sections.map(s => ({
+                  id: s.id,
+                  title: s.title,
+                  contentLength: s.content.length,
+                  hasVisualAid: /Visual Aid/i.test(s.content)
+                }))
               });
               
               // Search all sections for the Visual Aid line
               for (const section of lessonStructure.sections) {
-                // Escape special regex characters
+                // Try multiple matching strategies
+                let match = null;
+                let strategy = '';
+                
+                // Strategy 1: Exact match (current approach)
                 const escapedLine = visualAidLine.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const match = section.content.match(new RegExp(escapedLine));
+                match = section.content.match(new RegExp(escapedLine));
+                if (match) strategy = 'exact';
+                
+                // Strategy 2: If exact match fails, try partial match
+                if (!match) {
+                  // Extract just the suggestion text (after "Visual Aid Suggestion:")
+                  const suggestionMatch = visualAidLine.match(/Visual Aid Suggestion[:\s]*(.+)/i);
+                  if (suggestionMatch) {
+                    const suggestionText = suggestionMatch[1].trim();
+                    const escapedSuggestion = suggestionText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    match = section.content.match(new RegExp(escapedSuggestion, 'i'));
+                    if (match) strategy = 'partial';
+                  }
+                }
+                
+                // Strategy 3: If still no match, try finding any Visual Aid line
+                if (!match) {
+                  match = section.content.match(/Visual Aid Suggestion[:\s]*[^\n]+/i);
+                  if (match) strategy = 'any';
+                }
+                
+                logServerMessage(`Searching section ${section.id} for Visual Aid`, 'info', {
+                  sectionTitle: section.title,
+                  strategy,
+                  found: !!match,
+                  visualAidLine: visualAidLine.substring(0, 60),
+                  sectionContent: section.content.substring(0, 200)
+                });
                 
                 if (match) {
                   // Found it! Insert image right after this line
@@ -287,18 +332,31 @@ async function generateLessonContentWithLLM(lessonId: string, options: LessonGen
                     section.content.substring(lineEnd);
                   
                   inserted = true;
-                  logServerMessage(`Image ${index + 1} placed after Visual Aid in section`, 'info', {
+                  logServerMessage(`Image ${generatedIndex + 1} placed after Visual Aid in section`, 'info', {
                     mediaId,
-                    sectionId: section.id
+                    sectionId: section.id,
+                    matchedLine: match[0].substring(0, 60)
                   });
                   break;
                 }
               }
               
+              // Fallback: If Visual Aid not found, insert at the end of the last section
               if (!inserted) {
-                logServerMessage(`Visual Aid not found for image ${index + 1}`, 'warning', { 
-                  visualAidLine: visualAidLine.substring(0, 60) 
-                });
+                if (lessonStructure.sections.length > 0) {
+                  const lastSection = lessonStructure.sections[lessonStructure.sections.length - 1];
+                  lastSection.content += `\n\n[IMAGE:${mediaId}]`;
+                  inserted = true;
+                  logServerMessage(`Image ${generatedIndex + 1} placed at end of lesson (Visual Aid not found)`, 'warning', { 
+                    mediaId,
+                    visualAidLine: visualAidLine.substring(0, 60),
+                    sectionId: lastSection.id
+                  });
+                } else {
+                  logServerMessage(`Visual Aid not found and no sections available for image ${generatedIndex + 1}`, 'error', { 
+                    visualAidLine: visualAidLine.substring(0, 60) 
+                  });
+                }
               }
             }
           });

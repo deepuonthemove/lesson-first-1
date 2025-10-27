@@ -2,9 +2,9 @@
 
 ## ✅ Completed Tasks
 
-### 1. Added 2 New Providers
-- ✅ **Pollinations.ai** (FREE, no API key) - Priority 1
-- ✅ **ImageRouter.io** (`IMAGEROUTERIO_API_KEY`) - Priority 2
+### 1. Added 3 New Providers
+- ✅ **Stable Horde** (`STABLEHORDE_API_KEY`) - Priority 1
+- ✅ **Pollinations.ai** (FREE, no API key) - Priority 2
 - ✅ **Hugging Face** (refactored from gemini-image.ts) - Priority 3
 
 ### 2. Refactored Code Architecture
@@ -17,8 +17,8 @@
 
 ### 3. Provider Priority Order
 Automatically tries providers in this order:
-1. **Pollinations.ai** (always available, no key needed)
-2. **ImageRouter.io** (if `IMAGEROUTERIO_API_KEY` is set)
+1. **Stable Horde** (if `STABLEHORDE_API_KEY` is set) - Default
+2. **Pollinations.ai** (always available, no key needed) - Fallback
 3. **Hugging Face** (if `HUGGINGFACE_API_KEY` is set)
 
 ## 📁 File Structure
@@ -28,9 +28,10 @@ Automatically tries providers in this order:
 lib/llm/
 ├── image-generation-common.ts     (14.9 KB) - Shared utilities
 ├── image-generation.ts            (5.8 KB)  - Main orchestrator
+├── stablehorde-image.ts           (6.5 KB)  - Stable Horde provider
 ├── pollinations-image.ts          (6.0 KB)  - Pollinations provider
-├── imagerouter-image.ts           (4.7 KB)  - ImageRouter provider
 ├── huggingface-image.ts           (7.3 KB)  - Hugging Face provider
+├── imagerouter-image.ts           (4.7 KB)  - ImageRouter provider (deprecated)
 └── gemini-image.ts                (1.0 KB)  - DEPRECATED (reference only)
 ```
 
@@ -45,12 +46,12 @@ MULTI_PROVIDER_IMAGE_GENERATION.md - Complete documentation
 
 ### 1. Automatic Fallback
 ```
-Pollinations.ai → ImageRouter.io → Hugging Face
+Stable Horde → Pollinations.ai → Hugging Face
 ```
 If one fails, automatically tries the next!
 
-### 2. Zero Configuration
-**Pollinations.ai works out of the box - no API key needed!**
+### 2. Zero Configuration Fallback
+**Pollinations.ai works as automatic fallback - no API key needed!**
 
 ### 3. Provider Interface
 All providers implement the same interface:

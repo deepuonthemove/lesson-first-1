@@ -4,15 +4,30 @@
 
 The image generation system now supports **3 providers** with automatic fallback:
 
-1. **Pollinations.ai** (FREE, no API key) ⭐ **Recommended**
-2. **ImageRouter.io** (requires `IMAGEROUTERIO_API_KEY`)
+1. **Stable Horde** (requires `STABLEHORDE_API_KEY`) ⭐ **Default**
+2. **Pollinations.ai** (FREE, no API key) ⭐ **Fallback**
 3. **Hugging Face** (requires `HUGGINGFACE_API_KEY`)
 
 The system automatically tries providers in order until one succeeds!
 
 ## Provider Details
 
-### 1. Pollinations.ai (Priority 1)
+### 1. Stable Horde (Priority 1 - Default)
+- 💳 **Requires API key:** `STABLEHORDE_API_KEY`
+- ✅ **Free community-driven service**
+- ✅ **Multiple Stable Diffusion models**
+- ✅ **Good performance**
+- ⚠️ **Free tier limits:** 512x512 images, 20 steps max
+- ⚠️ **Rate limit:** 2 requests per second (automatically handled)
+- 🔗 **Website:** https://stablehorde.net/
+
+**Perfect for:**
+- High-quality image generation
+- Community-driven service
+- Free usage with API key
+- Professional results (within free tier limits)
+
+### 2. Pollinations.ai (Priority 2 - Fallback)
 - ✅ **Completely FREE**
 - ✅ **No API key required**
 - ✅ **No rate limits**
@@ -25,20 +40,6 @@ The system automatically tries providers in order until one succeeds!
 - Free tier usage
 - Educational projects
 - High volume generation
-
-### 2. ImageRouter.io (Priority 2)
-- 💳 **Requires API key:** `IMAGEROUTERIO_API_KEY`
-- ✅ **Built-in model routing**
-- ✅ **Automatic fallback**
-- ✅ **Good performance**
-- ✅ **Pay-as-you-go pricing**
-- 🔗 **Website:** https://imagerouter.io/
-
-**Perfect for:**
-- Production applications
-- When you need reliability
-- Professional quality
-- Budget-conscious projects
 
 ### 3. Hugging Face (Priority 3)
 - 💳 **Requires API key:** `HUGGINGFACE_API_KEY`
@@ -56,23 +57,29 @@ The system automatically tries providers in order until one succeeds!
 
 ## Setup
 
-### Quick Start (No API Key Needed!)
+### Quick Start (Recommended Setup)
 
-**Pollinations.ai works out of the box - nothing to configure!**
+**Stable Horde is now the default provider for high-quality image generation.**
 
-Just set `learningStyle: 'reading and visual'` and image generation will work automatically.
-
-### Optional: Add More Providers
-
-#### ImageRouter.io Setup
-1. Sign up at https://imagerouter.io/
+#### Stable Horde Setup (Default)
+1. Sign up at https://stablehorde.net/
 2. Get your API key from the dashboard
 3. Add to `.env.local`:
 ```bash
-IMAGEROUTERIO_API_KEY=your_api_key_here
+STABLEHORDE_API_KEY=your_api_key_here
 ```
 
-#### Hugging Face Setup
+**Note:** Stable Horde uses a "kudos" system for high-resolution images. The free tier supports:
+- **Image size:** Up to 512x512 pixels
+- **Steps:** Up to 20 steps
+- **No kudos required** for these settings
+
+#### Pollinations.ai Setup (Fallback - No API Key Needed!)
+**Pollinations.ai works as automatic fallback - nothing to configure!**
+
+If Stable Horde fails or isn't configured, Pollinations.ai will automatically be used.
+
+#### Hugging Face Setup (Optional)
 1. Create account at https://huggingface.co/
 2. Go to Settings → Access Tokens
 3. Create a new token with "read" permission

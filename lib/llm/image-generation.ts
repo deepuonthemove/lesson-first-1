@@ -20,6 +20,7 @@ import {
 import { createPollinationsProvider } from './pollinations-image';
 import { createImageRouterProvider } from './imagerouter-image';
 import { createHuggingFaceProvider } from './huggingface-image';
+import { createStableHordeProvider } from './stablehorde-image';
 
 // Re-export types and functions for use by other modules
 export type { GeneratedImage };
@@ -31,7 +32,18 @@ export { extractImagePromptsFromContent };
 function getAvailableProviders(): ImageProvider[] {
   const providers: ImageProvider[] = [];
   
-  // Priority order: Pollinations → ImageRouter → Hugging Face
+  // Priority order: Stable Horde → Pollinations → Hugging Face
+  const stableHordeProvider = createStableHordeProvider();
+  const stableHordeAvailable = stableHordeProvider.isAvailable();
+  logServerMessage('Checking Stable Horde provider', 'info', {
+    available: stableHordeAvailable,
+    reason: stableHordeAvailable ? 'API key found' : 'API key not set (STABLEHORDE_API_KEY)',
+    hasEnvVar: !!process.env.STABLEHORDE_API_KEY
+  });
+  if (stableHordeAvailable) {
+    providers.push(stableHordeProvider);
+  }
+  
   const pollinationsProvider = createPollinationsProvider();
   const pollinationsAvailable = pollinationsProvider.isAvailable();
   logServerMessage('Checking Pollinations.ai provider', 'info', {
@@ -40,17 +52,6 @@ function getAvailableProviders(): ImageProvider[] {
   });
   if (pollinationsAvailable) {
     providers.push(pollinationsProvider);
-  }
-  
-  const imageRouterProvider = createImageRouterProvider();
-  const imageRouterAvailable = imageRouterProvider.isAvailable();
-  logServerMessage('Checking ImageRouter.io provider', 'info', {
-    available: imageRouterAvailable,
-    reason: imageRouterAvailable ? 'API key found' : 'API key not set (IMAGEROUTERIO_API_KEY)',
-    hasEnvVar: !!process.env.IMAGEROUTERIO_API_KEY
-  });
-  if (imageRouterAvailable) {
-    providers.push(imageRouterProvider);
   }
   
   const huggingFaceProvider = createHuggingFaceProvider();
@@ -67,8 +68,8 @@ function getAvailableProviders(): ImageProvider[] {
   logServerMessage('Provider availability summary', 'info', {
     totalAvailable: providers.length,
     providers: providers.map(p => p.name),
+    stableHordeAvailable,
     pollinationsAvailable,
-    imageRouterAvailable,
     huggingFaceAvailable
   });
   
