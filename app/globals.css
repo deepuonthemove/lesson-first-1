@@ -86,4 +86,17 @@
       opacity: 1;
     }
   }
+
+  /* Lesson Bounding Box */
+  .lesson-bounding-box {
+    border: 2px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    padding: 2rem;
+    background: hsl(var(--card));
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  .dark .lesson-bounding-box {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  }
 }

@@ -367,71 +367,79 @@ export function DynamicLessonRenderer({
 
   return (
     <div className="lesson-container max-w-4xl mx-auto px-4 py-8">
-      {/* Lesson Header */}
-      <header className="lesson-header mb-8">
-        <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">
-          {lessonStructure.title}
-        </h1>
-        {lessonStructure.subtitle && (
-          <h2 className="text-xl text-gray-600 dark:text-gray-400 mb-4">
-            {lessonStructure.subtitle}
-          </h2>
-        )}
-        <div className="flex gap-2 flex-wrap">
-          {lessonStructure.metadata.difficulty && (
-            <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full text-sm">
-              {lessonStructure.metadata.difficulty}
-            </span>
+      {/* Lesson Content with Bounding Box */}
+      <div className="lesson-bounding-box">
+        {/* Lesson Header */}
+        <header className="lesson-header mb-8">
+          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+            {lessonStructure.title}
+          </h1>
+          {lessonStructure.subtitle && (
+            <h2 className="text-xl text-gray-600 dark:text-gray-400 mb-4">
+              {lessonStructure.subtitle}
+            </h2>
           )}
-          {lessonStructure.metadata.duration && (
-            <span className="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-3 py-1 rounded-full text-sm">
-              ⏱️ {lessonStructure.metadata.duration} min
-            </span>
-          )}
-          {lessonStructure.metadata.tags?.map(tag => (
-            <span 
-              key={tag}
-              className="inline-block bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-      </header>
+          <div className="flex gap-2 flex-wrap">
+            {lessonStructure.metadata.difficulty && (
+              <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full text-sm">
+                {lessonStructure.metadata.difficulty}
+              </span>
+            )}
+            {lessonStructure.metadata.duration && (
+              <span className="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-3 py-1 rounded-full text-sm">
+                ⏱️ {lessonStructure.metadata.duration} min
+              </span>
+            )}
+            {lessonStructure.metadata.tags?.map(tag => (
+              <span 
+                key={tag}
+                className="inline-block bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </header>
 
-      {/* Lesson Content */}
-      <div className="lesson-content space-y-6">
-        {lessonStructure.sections
-          .sort((a, b) => a.order - b.order)
-          .map(section => {
-            // Check if section contains media reference
-            const mediaMatch = section.content.match(/\[IMAGE:([^\]]+)\]/);
-            if (mediaMatch) {
-              const mediaId = mediaMatch[1];
-              const mediaItem = lessonStructure.media.find(m => m.id === mediaId);
+        {/* Lesson Content */}
+        <div className="lesson-content space-y-6">
+          {lessonStructure.sections
+            .sort((a, b) => a.order - b.order)
+            .map(section => {
+              // Check if section contains media reference
+              const mediaMatch = section.content.match(/\[IMAGE:([^\]]+)\]/);
+              if (mediaMatch) {
+                const mediaId = mediaMatch[1];
+                const mediaItem = lessonStructure.media.find(m => m.id === mediaId);
+                
+                // Remove the [IMAGE:...] reference from content before rendering
+                const sectionWithoutImageRef = {
+                  ...section,
+                  content: section.content.replace(/\[IMAGE:[^\]]+\]/, '').trim()
+                };
+                
+                // Only render media if it exists and has valid content
+                const shouldRenderMedia = mediaItem && (
+                  (mediaItem.type === 'image' && mediaItem.url && mediaItem.url.trim() !== '') ||
+                  (mediaItem.type === 'svg' && mediaItem.svgContent && mediaItem.svgContent.trim() !== '')
+                );
+                
+                return (
+                  <React.Fragment key={section.id}>
+                    {renderSection(sectionWithoutImageRef)}
+                    {shouldRenderMedia && renderMedia(mediaItem)}
+                  </React.Fragment>
+                );
+              }
               
-              // Remove the [IMAGE:...] reference from content before rendering
-              const sectionWithoutImageRef = {
-                ...section,
-                content: section.content.replace(/\[IMAGE:[^\]]+\]/, '').trim()
-              };
-              
-              // Only render media if it exists and has valid content
-              const shouldRenderMedia = mediaItem && (
-                (mediaItem.type === 'image' && mediaItem.url && mediaItem.url.trim() !== '') ||
-                (mediaItem.type === 'svg' && mediaItem.svgContent && mediaItem.svgContent.trim() !== '')
-              );
-              
-              return (
-                <React.Fragment key={section.id}>
-                  {renderSection(sectionWithoutImageRef)}
-                  {shouldRenderMedia && renderMedia(mediaItem)}
-                </React.Fragment>
-              );
-            }
-            
-            return renderSection(section);
-          })}
+              return renderSection(section);
+            })}
+        </div>
+
+        {/* Metadata Footer */}
+        <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400">
+          <p>Last updated: {new Date(lessonStructure.metadata.updatedAt).toLocaleString()}</p>
+        </footer>
       </div>
 
       {/* Add Media Buttons (if editable) */}
@@ -479,11 +487,6 @@ export function DynamicLessonRenderer({
           </button>
         </div>
       )}
-
-      {/* Metadata Footer */}
-      <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400">
-        <p>Last updated: {new Date(lessonStructure.metadata.updatedAt).toLocaleString()}</p>
-      </footer>
     </div>
   );
 }
