@@ -64,9 +64,8 @@ export function parseMarkdownToStructure(markdownContent: string, lessonId: stri
   const titleMatch = markdownContent.match(/^#\s+(.+)$/m);
   const title = titleMatch ? titleMatch[1] : 'Untitled Lesson';
 
-  // Extract subtitle (first H2 or paragraph after title)
-  const subtitleMatch = markdownContent.match(/^##\s+(.+)$/m);
-  const subtitle = subtitleMatch ? subtitleMatch[1] : undefined;
+  // Note: We no longer extract subtitle separately to prevent duplication
+  // All H2 headers will be treated as sections consistently
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -187,7 +186,7 @@ export function parseMarkdownToStructure(markdownContent: string, lessonId: stri
   return {
     id: lessonId,
     title,
-    subtitle,
+    subtitle: undefined, // No longer extracting subtitle to prevent duplication
     sections,
     media,
     metadata: {
