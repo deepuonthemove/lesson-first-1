@@ -83,7 +83,7 @@ export function LessonsTable({ lessons, onLessonDeleted, onLessonStatusUpdate }:
           <CardTitle>Your Lessons</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500 text-center py-8">
+          <p className="text-muted-foreground text-center py-12">
             No lessons generated yet. Create your first lesson above!
           </p>
         </CardContent>
@@ -101,28 +101,28 @@ export function LessonsTable({ lessons, onLessonDeleted, onLessonStatusUpdate }:
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-3 font-medium">Title</th>
-                <th className="text-left p-3 font-medium">Status</th>
-                <th className="text-left p-3 font-medium">Created</th>
-                <th className="text-left p-3 font-medium">Actions</th>
+                <th className="text-left p-4 font-medium">Title</th>
+                <th className="text-left p-4 font-medium">Status</th>
+                <th className="text-left p-4 font-medium">Created</th>
+                <th className="text-left p-4 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {lessons.map((lesson) => (
-                <tr key={lesson.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">
+                <tr key={lesson.id} className="border-b hover:bg-accent/50 transition-colors">
+                  <td className="p-4">
                     <div className="font-medium">{lesson.title}</div>
                      {/*<div className="text-sm text-gray-500 truncate max-w-xs">
                        {lesson.outline}
                     </div>*/}
                   </td>
-                  <td className="p-3">
+                  <td className="p-4">
                     {getStatusBadge(lesson.status)}
                   </td>
-                  <td className="p-3 text-sm text-gray-600">
+                  <td className="p-4 text-sm text-muted-foreground">
                     {formatDate(lesson.created_at)}
                   </td>
-                  <td className="p-3">
+                  <td className="p-4">
                     <div className="flex items-center gap-2">
                       {lesson.status === "generated" || lesson.status === "error" ? (
                         <>

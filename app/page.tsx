@@ -29,15 +29,15 @@ export default async function Home() {
           </div>
         </nav>
         
-        <div className="flex-1 flex flex-col gap-8 max-w-5xl p-5 w-full">
+        <div className="flex-1 flex flex-col gap-12 max-w-5xl p-8 w-full">
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">AI Lesson Generator</h1>
-            <p className="text-gray-600 text-lg">
+            <h1 className="text-4xl font-semibold mb-4">AI Lesson Generator</h1>
+            <p className="text-muted-foreground text-lg">
               Create comprehensive lessons from simple outlines
             </p>
           </div>
           
-          <div className="flex flex-col gap-8 items-center">
+          <div className="flex flex-col gap-12 items-center">
             {setupError && <SetupWarning />}
             
             <LessonCoordinator lessons={lessons || []} />

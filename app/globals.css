@@ -134,6 +134,106 @@
     margin-bottom: 1.5rem;
   }
 
+  /* Minimal Form Input Classes */
+  .minimal-input,
+  .minimal-select,
+  .minimal-textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.375rem;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: 0.9375rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .minimal-input:focus,
+  .minimal-select:focus,
+  .minimal-textarea:focus {
+    outline: none;
+    border-color: hsl(var(--border));
+    box-shadow: 0 0 0 1px hsl(var(--border));
+  }
+
+  .minimal-textarea {
+    resize: vertical;
+    min-height: 7.5rem;
+  }
+
+  .dark .minimal-input:focus,
+  .dark .minimal-select:focus,
+  .dark .minimal-textarea:focus {
+    box-shadow: 0 0 0 1px hsl(var(--border));
+  }
+
+  /* Gradient Form Background */
+  .gradient-form-container {
+    position: relative;
+    background: radial-gradient(ellipse at top, hsl(220 60% 97%), transparent 70%);
+    padding: 3rem;
+    border-radius: 1rem;
+  }
+
+  .dark .gradient-form-container {
+    background: radial-gradient(ellipse at top, hsl(220 20% 15%), transparent 70%);
+  }
+
+  /* Prominent Textarea */
+  .prominent-textarea {
+    min-height: 12rem;
+    font-size: 1rem;
+    padding: 1.25rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .prominent-textarea::placeholder {
+    color: hsl(var(--muted-foreground) / 0.6);
+  }
+
+  .prominent-textarea:focus {
+    outline: none;
+    border-color: hsl(var(--border));
+    box-shadow: 0 0 0 1px hsl(var(--border));
+  }
+
+  /* Collapsible Options */
+  .collapsible-options {
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+  }
+
+  .collapsible-options-collapsed {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .collapsible-options-expanded {
+    max-height: 1000px;
+    opacity: 1;
+  }
+
+  .options-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    border: none;
+    background: transparent;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .options-toggle:hover {
+    color: hsl(var(--foreground));
+  }
+
   /* Minimal Badge Styling */
   .lesson-badge {
     background: hsl(var(--muted));
