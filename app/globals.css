@@ -87,34 +87,53 @@
     }
   }
 
+  /* Lesson Page Gradient Wrapper */
+  .lesson-page-gradient-wrapper {
+    background: 
+      radial-gradient(ellipse 100% 60% at top, hsl(220 60% 97%), transparent),
+      radial-gradient(ellipse 100% 60% at bottom, hsl(220 60% 97%), transparent);
+    min-height: 100vh;
+  }
+
+  .dark .lesson-page-gradient-wrapper {
+    background: 
+      radial-gradient(ellipse 100% 60% at top, hsl(220 20% 18%), transparent),
+      radial-gradient(ellipse 100% 60% at bottom, hsl(220 20% 18%), transparent);
+  }
+
   /* Lesson Outer Bounding Box - Minimal Style */
   .lesson-outer-bounding-box {
     border: 1px solid hsl(var(--border));
     border-radius: 0.5rem;
     padding: 3rem;
-    background: hsl(var(--background));
+    background: transparent;
     margin-bottom: 2rem;
   }
 
-  /* Lesson Title Bounding Box - Subtle Style */
+  /* Lesson Title Bounding Box - Minimal Style */
   .lesson-title-bounding-box {
+    position: relative;
     border: none;
     border-radius: 0.25rem;
     padding: 2rem;
-    background: hsl(var(--muted) / 0.3);
+    background: transparent;
     margin-bottom: 3rem;
   }
 
-  /* Section Heading - Minimal Style */
+  /* Section Heading - Minimal Style with Gradient */
   .section-heading-bounding-box {
     border: none;
     border-bottom: 1px solid hsl(var(--border));
     border-radius: 0;
     padding: 1rem 0;
-    background: transparent;
+    background: linear-gradient(to right, hsl(var(--accent) / 0.05), transparent);
     margin-bottom: 2rem;
     display: block;
     width: 100%;
+  }
+
+  .dark .section-heading-bounding-box {
+    background: linear-gradient(to right, hsl(var(--accent) / 0.08), transparent);
   }
 
   /* Enhanced Typography */

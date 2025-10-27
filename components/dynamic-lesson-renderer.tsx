@@ -376,9 +376,10 @@ export function DynamicLessonRenderer({
   }
 
   return (
-    <div className="lesson-container max-w-4xl mx-auto px-4 py-8">
-      {/* Outer Bounding Box for Entire Lesson */}
-      <div className="lesson-outer-bounding-box">
+    <div className="lesson-page-gradient-wrapper">
+      <div className="lesson-container max-w-4xl mx-auto px-4 py-8">
+        {/* Outer Bounding Box for Entire Lesson */}
+        <div className="lesson-outer-bounding-box">
         {/* Lesson Title and Headings with Inner Bounding Box */}
         <div className="lesson-title-bounding-box">
           <header className="lesson-header">
@@ -454,51 +455,52 @@ export function DynamicLessonRenderer({
         </footer>
       </div>
 
-      {/* Add Media Buttons (if editable) */}
-      {editable && (
-        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 flex gap-4 flex-wrap">
-          <button
-            onClick={() => {
-              const url = prompt('Enter image URL:');
-              if (!url) return;
-              const alt = prompt('Enter image alt text:') || 'Image';
-              const caption = prompt('Enter image caption (optional):');
-              
-              handleMediaAdd({
-                id: `image-${Date.now()}`,
-                type: 'image',
-                url,
-                alt,
-                caption: caption || undefined,
-                position: 'inline'
-              });
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            🖼️ Add Image
-          </button>
-          <button
-            onClick={() => {
-              const svgContent = prompt('Enter SVG content:');
-              if (!svgContent) return;
-              const alt = prompt('Enter SVG alt text:') || 'SVG';
-              const caption = prompt('Enter SVG caption (optional):');
-              
-              handleMediaAdd({
-                id: `svg-${Date.now()}`,
-                type: 'svg',
-                svgContent,
-                alt,
-                caption: caption || undefined,
-                position: 'inline'
-              });
-            }}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            ✏️ Add SVG
-          </button>
-        </div>
-      )}
+        {/* Add Media Buttons (if editable) */}
+        {editable && (
+          <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 flex gap-4 flex-wrap">
+            <button
+              onClick={() => {
+                const url = prompt('Enter image URL:');
+                if (!url) return;
+                const alt = prompt('Enter image alt text:') || 'Image';
+                const caption = prompt('Enter image caption (optional):');
+                
+                handleMediaAdd({
+                  id: `image-${Date.now()}`,
+                  type: 'image',
+                  url,
+                  alt,
+                  caption: caption || undefined,
+                  position: 'inline'
+                });
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              🖼️ Add Image
+            </button>
+            <button
+              onClick={() => {
+                const svgContent = prompt('Enter SVG content:');
+                if (!svgContent) return;
+                const alt = prompt('Enter SVG alt text:') || 'SVG';
+                const caption = prompt('Enter SVG caption (optional):');
+                
+                handleMediaAdd({
+                  id: `svg-${Date.now()}`,
+                  type: 'svg',
+                  svgContent,
+                  alt,
+                  caption: caption || undefined,
+                  position: 'inline'
+                });
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              ✏️ Add SVG
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
