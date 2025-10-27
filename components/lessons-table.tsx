@@ -124,11 +124,6 @@ export function LessonsTable({ lessons, onLessonDeleted, onLessonStatusUpdate }:
                   </td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
-                      {lesson.status === "generating" && (
-                        <Badge variant="secondary" className="animate-pulse">
-                          Generating...
-                        </Badge>
-                      )}
                       {lesson.status === "generated" || lesson.status === "error" ? (
                         <>
                           {lesson.status === "generated" && (
