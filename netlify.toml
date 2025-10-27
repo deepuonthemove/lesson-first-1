@@ -4,44 +4,26 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,NEXT_PUBLIC_SUPABASE_URL"
 
-# Suppress secret scanner warnings for Supabase public keys
-# These are anon/publishable keys designed to be public and are protected by RLS
-[build.processing]
-  skip_processing = false
-
-# Exclude Supabase public environment variables from secret detection
-# These keys are safe to expose as they are designed for client-side use
-# and security is enforced by Supabase Row Level Security policies
-[build.processing.excluded_env_vars]
-  NEXT_PUBLIC_SUPABASE_URL = true
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = true
-
-# Netlify Functions configuration for Next.js API routes
-[functions]
-  directory = ".next/server"
-
-# Redirects for Next.js App Router
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-# Headers for security and performance
+# No-cache headers for API routes and dynamic content
 [[headers]]
-  for = "/*"
+  for = "/api/*"
   [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
 
 [[headers]]
-  for = "/_next/static/*"
+  for = "/lessons/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/traces/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
