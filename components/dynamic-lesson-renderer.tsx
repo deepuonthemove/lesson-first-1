@@ -157,10 +157,10 @@ export function DynamicLessonRenderer({
     switch (section.type) {
       case 'text':
         return (
-          <div key={section.id} className="lesson-section text-section mb-6">
+          <div key={section.id} className="lesson-section text-section">
             {section.title && (
               <div className="section-heading-bounding-box">
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className="text-2xl font-medium text-gray-900 dark:text-gray-100">
                   {section.title}
                 </h3>
               </div>
@@ -170,12 +170,12 @@ export function DynamicLessonRenderer({
                 value={section.content}
                 onChange={(e) => handleSectionUpdate(section.id, e.target.value)}
                 onBlur={() => setEditingSection(null)}
-                className="w-full p-4 border border-gray-300 rounded-lg min-h-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-4 border border-gray-200 rounded-lg min-h-32 focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
                 autoFocus
               />
             ) : (
               <div 
-                className={`prose prose-lg max-w-none dark:prose-invert ${editable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded' : ''}`}
+                className={`prose prose-lg max-w-none dark:prose-invert ${editable ? 'cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/50 p-3 rounded' : ''}`}
                 onClick={() => editable && setEditingSection(section.id)}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -188,7 +188,7 @@ export function DynamicLessonRenderer({
 
       case 'code':
         return (
-          <div key={section.id} className="lesson-section code-section my-6">
+          <div key={section.id} className="lesson-section code-section">
             {section.title && (
               <div className="section-heading-bounding-box">
                 <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -196,7 +196,7 @@ export function DynamicLessonRenderer({
                 </h4>
               </div>
             )}
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+            <pre className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6 rounded-lg overflow-x-auto border border-gray-200 dark:border-gray-700">
               <code className={`language-${section.metadata?.language || 'plaintext'}`}>
                 {section.content}
               </code>
@@ -206,7 +206,7 @@ export function DynamicLessonRenderer({
 
       case 'list':
         return (
-          <div key={section.id} className="lesson-section list-section my-4">
+          <div key={section.id} className="lesson-section list-section">
             {section.title && (
               <div className="section-heading-bounding-box">
                 <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -224,16 +224,16 @@ export function DynamicLessonRenderer({
 
       case 'callout':
         return (
-          <div key={section.id} className="lesson-section callout-section my-6">
-            <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded">
+          <div key={section.id} className="lesson-section callout-section">
+            <div className="bg-gray-50 dark:bg-gray-800/30 border-l-2 border-gray-300 dark:border-gray-600 p-6 rounded-lg">
               {section.title && (
-                <div className="section-heading-bounding-box mb-3">
-                  <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                <div className="section-heading-bounding-box mb-4">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     {section.title}
                   </h4>
                 </div>
               )}
-              <div className="prose prose-lg max-w-none dark:prose-invert prose-p:text-blue-800 dark:prose-p:text-blue-200">
+              <div className="prose prose-lg max-w-none dark:prose-invert">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {section.content}
                 </ReactMarkdown>
@@ -244,16 +244,16 @@ export function DynamicLessonRenderer({
 
       case 'exercise':
         return (
-          <div key={section.id} className="lesson-section exercise-section my-6">
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 p-6 rounded-lg">
+          <div key={section.id} className="lesson-section exercise-section">
+            <div className="bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-700 p-6 rounded-lg">
               {section.title && (
-                <div className="section-heading-bounding-box mb-3">
-                  <h4 className="text-lg font-semibold text-green-900 dark:text-green-100">
+                <div className="section-heading-bounding-box mb-4">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     📝 {section.title}
                   </h4>
                 </div>
               )}
-              <div className="prose prose-lg max-w-none dark:prose-invert prose-p:text-green-800 dark:prose-p:text-green-200">
+              <div className="prose prose-lg max-w-none dark:prose-invert">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {section.content}
                 </ReactMarkdown>
@@ -264,7 +264,7 @@ export function DynamicLessonRenderer({
 
       default:
         return (
-          <div key={section.id} className="lesson-section mb-4">
+          <div key={section.id} className="lesson-section">
             <div className="prose prose-lg max-w-none dark:prose-invert">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {section.content}
@@ -302,7 +302,7 @@ export function DynamicLessonRenderer({
           <img 
             src={mediaItem.url} 
             alt={mediaItem.alt}
-            className="max-w-2xl w-full h-auto rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+            className="max-w-2xl w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
           />
           {mediaItem.caption && (
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 text-center italic">
@@ -390,21 +390,21 @@ export function DynamicLessonRenderer({
                 {lessonStructure.subtitle}
               </h2>
             )}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-3 flex-wrap mt-4">
               {lessonStructure.metadata.difficulty && (
-                <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full text-sm">
+                <span className="lesson-badge">
                   {lessonStructure.metadata.difficulty}
                 </span>
               )}
               {lessonStructure.metadata.duration && (
-                <span className="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-3 py-1 rounded-full text-sm">
+                <span className="lesson-badge">
                   ⏱️ {lessonStructure.metadata.duration} min
                 </span>
               )}
               {lessonStructure.metadata.tags?.map(tag => (
                 <span 
                   key={tag}
-                  className="inline-block bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm"
+                  className="lesson-badge"
                 >
                   #{tag}
                 </span>
@@ -414,7 +414,7 @@ export function DynamicLessonRenderer({
         </div>
 
         {/* Lesson Content */}
-        <div className="lesson-content space-y-6">
+        <div className="lesson-content space-y-8">
           {lessonStructure.sections
             .sort((a, b) => a.order - b.order)
             .map(section => {
@@ -449,7 +449,7 @@ export function DynamicLessonRenderer({
         </div>
 
         {/* Metadata Footer */}
-        <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400">
+        <footer className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
           <p>Last updated: {new Date(lessonStructure.metadata.updatedAt).toLocaleString()}</p>
         </footer>
       </div>

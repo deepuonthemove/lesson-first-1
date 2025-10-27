@@ -87,44 +87,61 @@
     }
   }
 
-  /* Lesson Outer Bounding Box */
+  /* Lesson Outer Bounding Box - Minimal Style */
   .lesson-outer-bounding-box {
-    border: 2px solid hsl(var(--border));
-    border-radius: 1rem;
-    padding: 2rem;
-    background: hsl(var(--card));
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  }
-
-  .dark .lesson-outer-bounding-box {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
-  }
-
-  /* Lesson Title Bounding Box */
-  .lesson-title-bounding-box {
     border: 1px solid hsl(var(--border));
     border-radius: 0.5rem;
-    padding: 1.25rem;
-    background: hsl(var(--muted));
+    padding: 3rem;
+    background: hsl(var(--background));
     margin-bottom: 2rem;
   }
 
-  .dark .lesson-title-bounding-box {
-    background: hsl(var(--muted));
+  /* Lesson Title Bounding Box - Subtle Style */
+  .lesson-title-bounding-box {
+    border: none;
+    border-radius: 0.25rem;
+    padding: 2rem;
+    background: hsl(var(--muted) / 0.3);
+    margin-bottom: 3rem;
   }
 
-  /* Section Heading Bounding Box */
+  /* Section Heading - Minimal Style */
   .section-heading-bounding-box {
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.375rem;
-    padding: 0.75rem 1rem;
-    background: hsl(var(--accent));
-    margin-bottom: 1rem;
+    border: none;
+    border-bottom: 1px solid hsl(var(--border));
+    border-radius: 0;
+    padding: 1rem 0;
+    background: transparent;
+    margin-bottom: 2rem;
     display: block;
     width: 100%;
   }
 
-  .dark .section-heading-bounding-box {
-    background: hsl(var(--accent));
+  /* Enhanced Typography */
+  .lesson-content {
+    line-height: 1.7;
+  }
+
+  .lesson-content h1,
+  .lesson-content h2,
+  .lesson-content h3,
+  .lesson-content h4 {
+    line-height: 1.4;
+    margin-bottom: 1rem;
+  }
+
+  .lesson-content p {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Minimal Badge Styling */
+  .lesson-badge {
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border));
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
   }
 }
