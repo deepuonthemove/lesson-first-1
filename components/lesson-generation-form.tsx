@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { logError, logUserAction } from "@/lib/sentry";
 
 interface LessonGenerationFormProps {
@@ -29,7 +28,6 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
   const [learningStyle, setLearningStyle] = useState<'reading and visual' | 'reading'>('reading');
   const [includeExamples, setIncludeExamples] = useState(true);
   const [includeExercises, setIncludeExercises] = useState(true);
-  const [showOptions, setShowOptions] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +65,7 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
     <Card className="w-full max-w-4xl">
       <CardContent className="p-0">
         <div className="gradient-form-container">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Prominent Textarea */}
             <div>
               <textarea
@@ -80,99 +78,96 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
               />
             </div>
 
-            {/* Collapsible Options Toggle */}
-            <button
-              type="button"
-              onClick={() => setShowOptions(!showOptions)}
-              className="options-toggle"
-            >
-              {showOptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              <span>{showOptions ? 'Hide Options' : 'Show Options'}</span>
-            </button>
-
-            {/* Collapsible Options Panel */}
-            <div className={`collapsible-options ${showOptions ? 'collapsible-options-expanded' : 'collapsible-options-collapsed'}`}>
-              <div className="space-y-6 pt-4 border-t border-border">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="gradeLevel">Grade Level</Label>
-                    <select
-                      id="gradeLevel"
-                      value={gradeLevel}
-                      onChange={(e) => setGradeLevel(e.target.value as '2' | '3' | '4' | '5' | '6' | '7' | '8')}
-                      className="minimal-select"
-                      disabled={isGenerating}
-                    >
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                      <option value="6">6</option>
-                      <option value="7">7</option>
-                      <option value="8">8</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="sections">Sections</Label>
-                    <input
-                      id="sections"
-                      type="number"
-                      min="2"
-                      max="10"
-                      value={sections}
-                      onChange={(e) => setSections(parseInt(e.target.value))}
-                      className="minimal-input"
-                      disabled={isGenerating}
-                    />
+            {/* Options - Always Visible, Compact */}
+            <div className="space-y-4">
+              {/* Row 1: Grade & Sections */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Grade Level</Label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[2, 3, 4, 5, 6, 7, 8].map(level => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setGradeLevel(level.toString() as '2' | '3' | '4' | '5' | '6' | '7' | '8')}
+                        className={`pill-selector ${gradeLevel === level.toString() ? 'pill-selector-active' : ''}`}
+                        disabled={isGenerating}
+                      >
+                        {level}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="learningStyle">Learning Style</Label>
-                  <select
-                    id="learningStyle"
-                    value={learningStyle}
-                    onChange={(e) => setLearningStyle(e.target.value as 'reading and visual' | 'reading')}
-                    className="minimal-select"
+                  <Label className="text-xs text-muted-foreground">Sections</Label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[4, 5, 6, 7, 8].map(num => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setSections(num)}
+                        className={`pill-selector ${sections === num ? 'pill-selector-active' : ''}`}
+                        disabled={isGenerating}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2: Learning Style */}
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Learning Style</Label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setLearningStyle('reading')}
+                    className={`style-pill ${learningStyle === 'reading' ? 'style-pill-active' : ''}`}
                     disabled={isGenerating}
                   >
-                    <option value="reading and visual">Reading and Visual (diagrams, charts, images)</option>
-                    <option value="reading">Reading (text-based content)</option>
-                  </select>
-                  {learningStyle === 'reading and visual' && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Images will be AI-generated based on Visual Aid hints in the content
-                    </p>
-                  )}
+                    Reading
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLearningStyle('reading and visual')}
+                    className={`style-pill ${learningStyle === 'reading and visual' ? 'style-pill-active' : ''}`}
+                    disabled={isGenerating}
+                  >
+                    Reading & Visual
+                  </button>
                 </div>
+                {learningStyle === 'reading and visual' && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Images will be AI-generated
+                  </p>
+                )}
+              </div>
 
-                <div className="space-y-3">
-                  <Label>Content Options</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="includeExamples"
-                        checked={includeExamples}
-                        onCheckedChange={(checked) => setIncludeExamples(checked as boolean)}
-                        disabled={isGenerating}
-                      />
-                      <Label htmlFor="includeExamples" className="text-sm">
-                        Include practical examples
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="includeExercises"
-                        checked={includeExercises}
-                        onCheckedChange={(checked) => setIncludeExercises(checked as boolean)}
-                        disabled={isGenerating}
-                      />
-                      <Label htmlFor="includeExercises" className="text-sm">
-                        Include exercises and practice problems
-                      </Label>
-                    </div>
-                  </div>
+              {/* Row 3: Checkboxes - Inline */}
+              <div className="flex gap-6 flex-wrap">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="includeExamples"
+                    checked={includeExamples}
+                    onCheckedChange={(checked) => setIncludeExamples(checked as boolean)}
+                    disabled={isGenerating}
+                  />
+                  <Label htmlFor="includeExamples" className="text-xs">
+                    Include practical examples
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="includeExercises"
+                    checked={includeExercises}
+                    onCheckedChange={(checked) => setIncludeExercises(checked as boolean)}
+                    disabled={isGenerating}
+                  />
+                  <Label htmlFor="includeExercises" className="text-xs">
+                    Include exercises and practice problems
+                  </Label>
                 </div>
               </div>
             </div>
