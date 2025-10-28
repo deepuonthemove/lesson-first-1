@@ -334,7 +334,7 @@
   font-weight: 500;
 }
 
-/* Submit Arrow Button - TLDW.us style */
+/* Submit Arrow Button - Modern gradient with animation */
 .submit-arrow-button {
   margin-left: auto; /* Push to right */
   width: 2.5rem;
@@ -347,28 +347,66 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all 0.3s ease;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 }
 
-.submit-arrow-button:hover:not(:disabled) {
-  background: hsl(var(--foreground) / 0.9);
-  transform: translateY(-2px);
+/* Gradient background when enabled */
+.submit-arrow-button:not(:disabled) {
+  background: linear-gradient(135deg, 
+    #3b82f6 0%,    /* Blue */
+    #8b5cf6 20%,   /* Violet */
+    #a855f7 40%,   /* Purple */
+    #f59e0b 70%,   /* Orange */
+    #eab308 100%   /* Yellow */
+  );
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
-.submit-arrow-button:active:not(:disabled) {
-  transform: translateY(0);
+.submit-arrow-button:not(:disabled):hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+  animation-duration: 1.5s; /* Faster animation on hover */
+}
+
+.submit-arrow-button:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
 }
 
 .submit-arrow-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background: hsl(var(--foreground));
+  animation: none;
+  box-shadow: none;
+}
+
+/* Gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Arrow icon */
 .submit-arrow-icon {
   width: 1.25rem;
   height: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+.submit-arrow-button:not(:disabled):hover .submit-arrow-icon {
+  transform: translateY(-1px);
 }
 
   /* Minimal Badge Styling */
