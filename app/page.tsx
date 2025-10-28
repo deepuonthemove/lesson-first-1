@@ -1,6 +1,7 @@
 import { LessonCoordinator } from "@/components/lesson-coordinator";
 import { SetupWarning } from "@/components/setup-warning";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -21,7 +22,9 @@ export default async function Home() {
         <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>Lesson AI</Link>
+              <Link href={"/"}>
+                <Badge className="lesson-ai-badge">Lesson AI</Badge>
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               <ThemeSwitcher />

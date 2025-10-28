@@ -111,6 +111,30 @@
     animation-duration: 2s, 1s; /* Faster animations on hover */
   }
 
+  /* Lesson AI Badge - Same as generating badge */
+  .lesson-ai-badge {
+    background: linear-gradient(135deg, 
+      rgba(59, 130, 246, 0.8) 0%,    /* Subtle Blue */
+      rgba(139, 92, 246, 0.8) 20%,   /* Subtle Violet */
+      rgba(168, 85, 247, 0.8) 40%,   /* Subtle Purple */
+      rgba(245, 158, 11, 0.8) 70%,   /* Subtle Orange */
+      rgba(234, 179, 8, 0.8) 100%    /* Subtle Yellow */
+    ) !important;
+    background-size: 300% 300%;
+    animation: gradientShift 4s ease-in-out infinite, generatingPulse 2s ease-in-out infinite;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+    transition: all 0.3s ease;
+    transform: scale(1);
+  }
+
+  .lesson-ai-badge:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+    animation-duration: 2s, 1s; /* Faster animations on hover */
+  }
+
   /* Main Page Gradient Wrapper */
   .main-page-gradient-wrapper {
     background: 
