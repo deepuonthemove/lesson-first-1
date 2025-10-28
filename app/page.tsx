@@ -30,8 +30,8 @@ export default async function Home() {
         </nav>
         
         <div className="flex-1 flex flex-col gap-12 max-w-5xl p-8 w-full">
-          <div className="text-center">
-            <h1 className="halo-title text-4xl font-semibold mb-4">AI Lesson Generator</h1>
+          <div className="text-center mt-8">
+            <h1 className="halo-title text-3xl font-medium mb-6">AI Lesson Generator</h1>
             <p className="text-muted-foreground text-lg">
               Create comprehensive lessons from simple outlines
             </p>
