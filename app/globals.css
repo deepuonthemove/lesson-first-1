@@ -87,6 +87,30 @@
     }
   }
 
+  /* Generating Badge - Subtle gradient with enhanced animation */
+  .generating-badge {
+    background: linear-gradient(135deg, 
+      rgba(59, 130, 246, 0.8) 0%,    /* Subtle Blue */
+      rgba(139, 92, 246, 0.8) 20%,   /* Subtle Violet */
+      rgba(168, 85, 247, 0.8) 40%,   /* Subtle Purple */
+      rgba(245, 158, 11, 0.8) 70%,   /* Subtle Orange */
+      rgba(234, 179, 8, 0.8) 100%    /* Subtle Yellow */
+    ) !important;
+    background-size: 300% 300%;
+    animation: gradientShift 4s ease-in-out infinite, generatingPulse 2s ease-in-out infinite;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+    transition: all 0.3s ease;
+    transform: scale(1);
+  }
+
+  .generating-badge:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+    animation-duration: 2s, 1s; /* Faster animations on hover */
+  }
+
   /* Main Page Gradient Wrapper */
   .main-page-gradient-wrapper {
     background: 
@@ -356,25 +380,27 @@
 /* Gradient background when enabled */
 .submit-arrow-button:not(:disabled) {
   background: linear-gradient(135deg, 
-    #3b82f6 0%,    /* Blue */
-    #8b5cf6 20%,   /* Violet */
-    #a855f7 40%,   /* Purple */
-    #f59e0b 70%,   /* Orange */
-    #eab308 100%   /* Yellow */
+    rgba(59, 130, 246, 0.8) 0%,    /* Subtle Blue */
+    rgba(139, 92, 246, 0.8) 20%,   /* Subtle Violet */
+    rgba(168, 85, 247, 0.8) 40%,   /* Subtle Purple */
+    rgba(245, 158, 11, 0.8) 70%,   /* Subtle Orange */
+    rgba(234, 179, 8, 0.8) 100%    /* Subtle Yellow */
   );
-  background-size: 200% 200%;
-  animation: gradientShift 3s ease infinite;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  background-size: 300% 300%;
+  animation: gradientShift 4s ease-in-out infinite;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+  transform: scale(1);
 }
 
 .submit-arrow-button:not(:disabled):hover {
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-  animation-duration: 1.5s; /* Faster animation on hover */
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  animation-duration: 2s; /* Faster animation on hover */
 }
 
 .submit-arrow-button:not(:disabled):active {
   transform: translateY(0) scale(0.98);
+  animation-play-state: paused;
 }
 
 .submit-arrow-button:disabled {
@@ -385,16 +411,44 @@
   box-shadow: none;
 }
 
-/* Gradient animation */
+/* Gradient animation - Enhanced with pulsing */
 @keyframes gradientShift {
   0% {
     background-position: 0% 50%;
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  25% {
+    background-position: 50% 0%;
+    transform: scale(1.02);
+    opacity: 1;
   }
   50% {
     background-position: 100% 50%;
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  75% {
+    background-position: 50% 100%;
+    transform: scale(1.02);
+    opacity: 1;
   }
   100% {
     background-position: 0% 50%;
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+/* Pulsing animation for generating badge */
+@keyframes generatingPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
   }
 }
 
