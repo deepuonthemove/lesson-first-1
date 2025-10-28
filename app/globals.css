@@ -220,78 +220,32 @@
     box-shadow: 0 0 0 1px hsl(var(--border));
   }
 
-  /* Gradient Form Background - External lighting */
+  /* Gradient Form Background - Clean container */
   .gradient-form-container {
     position: relative;
-    padding: 2rem;
-    background: radial-gradient(
-      ellipse 120% 80% at center,
-      hsl(var(--accent) / 0.12),
-      transparent 60%
-    );
+    padding: 3rem;
+    background: transparent;
     border-radius: 1rem;
     margin: 2rem 0;
   }
 
-  .dark .gradient-form-container {
-    background: radial-gradient(
-      ellipse 120% 80% at center,
-      hsl(220 20% 20% / 0.4),
-      transparent 60%
-    );
-  }
-
-  /* Prominent Textarea */
-  .prominent-textarea {
-    min-height: 12rem;
-    font-size: 1rem;
-    padding: 1.25rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.5rem;
-    background: hsl(var(--background));
-    color: hsl(var(--foreground));
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .prominent-textarea::placeholder {
-    color: hsl(var(--muted-foreground) / 0.6);
-  }
-
-  .prominent-textarea:focus {
-    outline: none;
-    border-color: hsl(var(--border));
-    box-shadow: 0 0 0 1px hsl(var(--border));
-  }
-
-/* Unified Input Container - TLDW.us style */
+/* Unified Input Container - TLDW.us style with shadow lighting */
 .unified-input-container {
-  border: none; /* Remove border */
-  border-radius: 0.75rem; /* Slightly larger radius */
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
   background: hsl(var(--background));
-  overflow: hidden;
+  overflow: visible;
   position: relative;
-  box-shadow: 0 0 0 1px hsl(var(--border) / 0.5); /* Very subtle outline */
+  
+  /* TLDW.us-style shadow lighting */
+  box-shadow: 2px 11px 40.4px rgba(0, 0, 0, 0.06);
+  transition-property: box-shadow;
+  transition-timing-function: ease;
+  transition-duration: 0.15s;
 }
 
-.unified-input-container::before {
-  content: '';
-  position: absolute;
-  inset: -60px;
-  background: radial-gradient(
-    ellipse 100% 60% at center,
-    hsl(var(--accent) / 0.08),
-    transparent
-  );
-  pointer-events: none;
-  z-index: -1;
-}
-
-.dark .unified-input-container::before {
-  background: radial-gradient(
-    ellipse 100% 60% at center,
-    hsl(220 20% 18% / 0.3),
-    transparent
-  );
+.dark .unified-input-container {
+  box-shadow: 2px 11px 40.4px rgba(0, 0, 0, 0.3);
 }
 
 /* Integrated Textarea - Larger */
