@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUp } from "lucide-react";
 import { logError, logUserAction } from "@/lib/sentry";
 
 interface LessonGenerationFormProps {
@@ -66,120 +64,118 @@ export function LessonGenerationForm({ onGenerate, isGenerating }: LessonGenerat
       <CardContent className="p-0">
         <div className="gradient-form-container">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Prominent Textarea */}
-            <div>
+            {/* Unified Input Container */}
+            <div className="unified-input-container">
+              {/* Integrated Textarea - Larger */}
               <textarea
                 id="outline"
                 value={outline}
                 onChange={(e) => setOutline(e.target.value)}
                 placeholder="What would you like to learn about? (e.g., 'A one-pager on how to divide with long division')"
-                className="prominent-textarea w-full"
+                className="integrated-textarea"
                 disabled={isGenerating}
               />
-            </div>
-
-            {/* Options - Always Visible, Compact */}
-            <div className="space-y-4">
-              {/* Row 1: Grade & Sections */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Grade Level</Label>
-                  <div className="flex gap-2 flex-wrap">
-                    {[2, 3, 4, 5, 6, 7, 8].map(level => (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => setGradeLevel(level.toString() as '2' | '3' | '4' | '5' | '6' | '7' | '8')}
-                        className={`pill-selector ${gradeLevel === level.toString() ? 'pill-selector-active' : ''}`}
-                        disabled={isGenerating}
-                      >
-                        {level}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Sections</Label>
-                  <div className="flex gap-2 flex-wrap">
-                    {[4, 5, 6, 7, 8].map(num => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => setSections(num)}
-                        className={`pill-selector ${sections === num ? 'pill-selector-active' : ''}`}
-                        disabled={isGenerating}
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Learning Style */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Learning Style</Label>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setLearningStyle('reading')}
-                    className={`style-pill ${learningStyle === 'reading' ? 'style-pill-active' : ''}`}
+              
+              {/* Options Footer Bar - No separator, inline flow */}
+              <div className="options-footer-bar">
+                {/* Grade Level Dropdown */}
+                <div className="flex items-center gap-1">
+                  <label htmlFor="grade" className="inline-label">Grade:</label>
+                  <select
+                    id="grade"
+                    value={gradeLevel}
+                    onChange={(e) => setGradeLevel(e.target.value as any)}
+                    className="inline-select"
                     disabled={isGenerating}
                   >
-                    Reading
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLearningStyle('reading and visual')}
-                    className={`style-pill ${learningStyle === 'reading and visual' ? 'style-pill-active' : ''}`}
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                  </select>
+                </div>
+
+                {/* Sections Dropdown */}
+                <div className="flex items-center gap-1">
+                  <label htmlFor="sections" className="inline-label">Sections:</label>
+                  <select
+                    id="sections"
+                    value={sections}
+                    onChange={(e) => setSections(Number(e.target.value))}
+                    className="inline-select"
                     disabled={isGenerating}
                   >
-                    Reading & Visual
-                  </button>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                  </select>
                 </div>
-                {learningStyle === 'reading and visual' && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Images will be AI-generated
-                  </p>
-                )}
-              </div>
 
-              {/* Row 3: Checkboxes - Inline */}
-              <div className="flex gap-6 flex-wrap">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="includeExamples"
-                    checked={includeExamples}
-                    onCheckedChange={(checked) => setIncludeExamples(checked as boolean)}
+                {/* Learning Style Dropdown */}
+                <div className="flex items-center gap-1">
+                  <label htmlFor="style" className="inline-label">Style:</label>
+                  <select
+                    id="style"
+                    value={learningStyle}
+                    onChange={(e) => setLearningStyle(e.target.value as any)}
+                    className="inline-select"
                     disabled={isGenerating}
-                  />
-                  <Label htmlFor="includeExamples" className="text-xs">
-                    Include practical examples
-                  </Label>
+                  >
+                    <option value="reading">Reading</option>
+                    <option value="reading and visual">Reading & Visual</option>
+                  </select>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="includeExercises"
-                    checked={includeExercises}
-                    onCheckedChange={(checked) => setIncludeExercises(checked as boolean)}
-                    disabled={isGenerating}
-                  />
-                  <Label htmlFor="includeExercises" className="text-xs">
-                    Include exercises and practice problems
-                  </Label>
+
+                {/* Toggle Text Labels - Inline (NOT right-aligned) */}
+                <div className="toggle-text-group">
+                  <span
+                    className={`toggle-text-item ${includeExamples ? 'active' : ''}`}
+                    onClick={() => !isGenerating && setIncludeExamples(!includeExamples)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !isGenerating) {
+                        e.preventDefault();
+                        setIncludeExamples(!includeExamples);
+                      }
+                    }}
+                    aria-label={`${includeExamples ? 'Disable' : 'Enable'} examples`}
+                  >
+                    Examples
+                  </span>
+                  <span
+                    className={`toggle-text-item ${includeExercises ? 'active' : ''}`}
+                    onClick={() => !isGenerating && setIncludeExercises(!includeExercises)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !isGenerating) {
+                        e.preventDefault();
+                        setIncludeExercises(!includeExercises);
+                      }
+                    }}
+                    aria-label={`${includeExercises ? 'Disable' : 'Enable'} exercises`}
+                  >
+                    Exercises
+                  </span>
                 </div>
+
+                {/* Submit Arrow Button - Right corner */}
+                <button
+                  type="submit"
+                  disabled={!outline.trim() || isGenerating}
+                  className="submit-arrow-button"
+                  aria-label="Generate lesson"
+                >
+                  <ArrowUp className="submit-arrow-icon" />
+                </button>
               </div>
             </div>
-
-            {/* Generate Button */}
-            <Button 
-              type="submit" 
-              disabled={!outline.trim() || isGenerating}
-              className="w-full"
-            >
-              {isGenerating ? "Generating with AI..." : "Generate Lesson with AI"}
-            </Button>
           </form>
         </div>
       </CardContent>

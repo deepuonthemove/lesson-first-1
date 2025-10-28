@@ -133,66 +133,7 @@
     text-shadow: 0 0 30px hsl(var(--foreground) / 0.15);
   }
 
-  /* Pill Selector Styles */
-  .pill-selector {
-    padding: 0.5rem 1rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.375rem;
-    background: transparent;
-    color: hsl(var(--muted-foreground));
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-  }
-
-  .pill-selector:hover:not(:disabled) {
-    background: hsl(var(--accent) / 0.5);
-    color: hsl(var(--foreground));
-  }
-
-.pill-selector-active {
-  background: hsl(var(--muted));
-  color: hsl(var(--foreground));
-  border-color: hsl(var(--foreground) / 0.3);
-  font-weight: 500;
-}
-
-  .pill-selector:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Style pill for wider options */
-  .style-pill {
-    padding: 0.625rem 1.25rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.375rem;
-    background: transparent;
-    color: hsl(var(--muted-foreground));
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    flex: 1;
-    white-space: nowrap;
-  }
-
-  .style-pill:hover:not(:disabled) {
-    background: hsl(var(--accent) / 0.5);
-    color: hsl(var(--foreground));
-  }
-
-.style-pill-active {
-  background: hsl(var(--muted));
-  color: hsl(var(--foreground));
-  border-color: hsl(var(--foreground) / 0.3);
-  font-weight: 500;
-}
-
-  .style-pill:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  /* Pill Selector Styles - Removed (replaced with dropdowns) */
 
   /* Lesson Outer Bounding Box - Minimal Style */
   .lesson-outer-bounding-box {
@@ -313,7 +254,159 @@
     box-shadow: 0 0 0 1px hsl(var(--border));
   }
 
-  /* Collapsible Options - Removed (no longer needed) */
+/* Unified Input Container - TLDW.us style */
+.unified-input-container {
+  border: none; /* Remove border */
+  border-radius: 0.75rem; /* Slightly larger radius */
+  background: hsl(var(--background));
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 0 1px hsl(var(--border) / 0.5); /* Very subtle outline */
+}
+
+.unified-input-container::before {
+  content: '';
+  position: absolute;
+  inset: -60px;
+  background: radial-gradient(
+    ellipse 100% 60% at center,
+    hsl(var(--accent) / 0.08),
+    transparent
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dark .unified-input-container::before {
+  background: radial-gradient(
+    ellipse 100% 60% at center,
+    hsl(220 20% 18% / 0.3),
+    transparent
+  );
+}
+
+/* Integrated Textarea - Larger */
+.integrated-textarea {
+  width: 100%;
+  min-height: 160px; /* Increased from 120px */
+  padding: 1.5rem; /* Increased from 1rem */
+  border: none;
+  background: transparent;
+  resize: vertical;
+  font-size: 1rem; /* Increased from 0.875rem */
+  line-height: 1.6;
+  outline: none;
+}
+
+.integrated-textarea::placeholder {
+  color: hsl(var(--muted-foreground) / 0.6);
+  font-size: 1rem;
+}
+
+/* Options Footer Bar - No separator, no special background */
+.options-footer-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.5rem 1.5rem 1.5rem; /* Match textarea padding */
+  border-top: none; /* Remove separator */
+  background: transparent; /* Remove muted background */
+  flex-wrap: wrap;
+}
+
+/* Minimal Inline Select */
+.inline-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.25rem;
+  background: hsl(var(--background));
+  font-size: 0.75rem;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.inline-select:hover {
+  border-color: hsl(var(--foreground) / 0.4);
+}
+
+.inline-select:focus {
+  outline: none;
+  border-color: hsl(var(--foreground) / 0.5);
+}
+
+/* Inline Label */
+.inline-label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-right: 0.25rem;
+}
+
+/* Toggle Text Labels - Inline with other options */
+.toggle-text-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  /* Remove: margin-left: auto; */
+}
+
+.toggle-text-item {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
+  font-weight: 400;
+}
+
+.toggle-text-item:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.5);
+}
+
+.toggle-text-item.active {
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted));
+  font-weight: 500;
+}
+
+/* Submit Arrow Button - TLDW.us style */
+.submit-arrow-button {
+  margin-left: auto; /* Push to right */
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.submit-arrow-button:hover:not(:disabled) {
+  background: hsl(var(--foreground) / 0.9);
+  transform: translateY(-2px);
+}
+
+.submit-arrow-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-arrow-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Arrow icon */
+.submit-arrow-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
 
   /* Minimal Badge Styling */
   .lesson-badge {
