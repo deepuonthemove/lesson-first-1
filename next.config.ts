@@ -91,4 +91,4 @@ const sentryWebpackPluginOptions = {
   automaticVercelMonitors: true,
 };
 
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+export default withSentryConfig(sentryWebpackPluginOptions);
