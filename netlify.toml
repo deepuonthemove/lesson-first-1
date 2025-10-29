@@ -30,18 +30,13 @@
 
 
  
-# No-cache headers for root page to prevent 304 responses
-#[[headers]]
-#  for = "/"
-#  [headers.values]
-#    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
-#    Pragma = "no-cache"
-#    Expires = "0"
+# Cacheable headers for root page and RSC requests
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=60, s-maxage=300"
 
-# No-cache headers for RSC requests to prevent 304 responses
-#[[headers]]
-#  for = "/*?_rsc=*"
-#  [headers.values]
-#    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
-#    Pragma = "no-cache"
-#    Expires = "0"
+[[headers]]
+  for = "/*?_rsc=*"
+  [headers.values]
+    Cache-Control = "public, max-age=60, s-maxage=300"

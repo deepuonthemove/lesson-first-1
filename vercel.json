@@ -33,6 +33,24 @@
           "value": "0"
         }
       ]
+    },
+    {
+      "source": "/\\?_rsc=.*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=60, s-maxage=300"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=60, s-maxage=300"
+        }
+      ]
     }
   ]
 }

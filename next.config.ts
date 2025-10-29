@@ -1,31 +1,22 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
-/*
 const nextConfig: NextConfig = {
-  /* config options here 
+  /* config options here */
   async headers() {
     return [
       {
-        // Apply no-cache headers to root page
+        // Apply cacheable headers to root page
         source: '/',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
+            value: 'public, max-age=60, s-maxage=300',
           },
         ],
       },
       {
-        // Apply no-cache headers to RSC requests
+        // Apply cacheable headers to RSC requests
         source: '/:path*',
         has: [
           {
@@ -36,22 +27,13 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
+            value: 'public, max-age=60, s-maxage=300',
           },
         ],
       },
     ];
   },
 };
-*/
 
 // Sentry configuration
 const sentryWebpackPluginOptions = {
@@ -91,4 +73,4 @@ const sentryWebpackPluginOptions = {
   automaticVercelMonitors: true,
 };
 
-export default withSentryConfig(sentryWebpackPluginOptions);
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
