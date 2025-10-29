@@ -24,6 +24,7 @@ export function DynamicLessonRenderer({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [contentLoaded, setContentLoaded] = useState(false);
 
   // Fetch TypeScript-generated lesson
   useEffect(() => {
@@ -44,6 +45,8 @@ export function DynamicLessonRenderer({
       const data = await response.json();
       console.log('Lesson structure loaded:', data.lessonStructure);
       setLessonStructure(data.lessonStructure);
+      // Trigger animation after content is loaded
+      setTimeout(() => setContentLoaded(true), 100);
     } catch (err) {
       console.error('Fetch error:', err);
       setError((err as Error).message);
@@ -379,7 +382,57 @@ export function DynamicLessonRenderer({
     <div className="lesson-page-gradient-wrapper">
       <div className="lesson-container max-w-4xl mx-auto px-4 py-8">
         {/* Outer Bounding Box for Entire Lesson */}
-        <div className="lesson-outer-bounding-box">
+        <div className={`lesson-outer-bounding-box ${contentLoaded ? 'animate-border' : ''}`}>
+          {contentLoaded && (
+            <svg className="absolute inset-0 w-full h-full pointer-events-none border-animation-svg">
+              <defs>
+                <linearGradient id="borderGradient" x1="0%" y1="0%" x2="0%" y2="0%" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="20%" stopColor="#8b5cf6" />
+                  <stop offset="40%" stopColor="#a855f7" />
+                  <stop offset="60%" stopColor="#f59e0b" />
+                  <stop offset="80%" stopColor="#eab308" />
+                  <stop offset="100%" stopColor="#3b82f6" />
+                  <animate
+                    attributeName="x1"
+                    values="0%; 100%; 100%; 0%; 0%"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="y1"
+                    values="0%; 0%; 100%; 100%; 0%"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="x2"
+                    values="100%; 100%; 0%; 0%; 100%"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="y2"
+                    values="0%; 100%; 100%; 0%; 0%"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
+                </linearGradient>
+              </defs>
+              <rect
+                className="border-path"
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+                rx="0.5rem"
+                ry="0.5rem"
+                fill="none"
+                stroke="url(#borderGradient)"
+                strokeWidth="2"
+              />
+            </svg>
+          )}
         {/* Lesson Title and Headings with Inner Bounding Box */}
         <div className="lesson-title-bounding-box">
           <header className="lesson-header">

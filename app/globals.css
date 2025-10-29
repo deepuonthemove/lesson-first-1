@@ -190,6 +190,33 @@
     padding: 3rem;
     background: transparent;
     margin-bottom: 2rem;
+    position: relative;
+  }
+
+  /* Animated Multicolored Border - 5 Color Chase Effect */
+  .lesson-outer-bounding-box.animate-border {
+    position: relative;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  /* SVG border animation */
+  .border-animation-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+  }
+
+  .border-animation-svg .border-path {
+    /* Solid line, no dash animation needed */
+  }
+
+  .lesson-outer-bounding-box.animate-border > *:not(.border-animation-svg) {
+    position: relative;
+    z-index: 1;
   }
 
   /* Lesson Title Bounding Box - Minimal Style */
@@ -200,6 +227,28 @@
     padding: 2rem;
     background: transparent;
     margin-bottom: 3rem;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* Animated title border line */
+  .lesson-title-bounding-box::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      #3b82f6 0%,
+      #8b5cf6 20%,
+      #a855f7 40%,
+      #f59e0b 60%,
+      #eab308 80%,
+      #3b82f6 100%
+    );
+    background-size: 300% 100%;
+    animation: slideSectionBorder 6s linear infinite;
   }
 
   /* Section Heading - Minimal Style with Gradient */
@@ -212,10 +261,41 @@
     margin-bottom: 2rem;
     display: block;
     width: 100%;
+    position: relative;
   }
 
   .dark .section-heading-bounding-box {
     background: linear-gradient(to right, hsl(var(--accent) / 0.08), transparent);
+  }
+
+  /* Animated section border line */
+  .section-heading-bounding-box::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      #3b82f6 0%,
+      #8b5cf6 20%,
+      #a855f7 40%,
+      #f59e0b 60%,
+      #eab308 80%,
+      #3b82f6 100%
+    );
+    background-size: 300% 100%;
+    animation: slideSectionBorder 6s linear infinite;
+  }
+
+  @keyframes slideSectionBorder {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 300% 0%;
+    }
   }
 
   /* Enhanced Typography */
