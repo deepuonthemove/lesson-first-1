@@ -3,36 +3,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  async headers() {
-    return [
-      {
-        // Apply cacheable headers to root page
-        source: '/',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=60, s-maxage=300',
-          },
-        ],
-      },
-      {
-        // Apply cacheable headers to RSC requests
-        source: '/:path*',
-        has: [
-          {
-            type: 'query',
-            key: '_rsc',
-          },
-        ],
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=60, s-maxage=300',
-          },
-        ],
-      },
-    ];
-  },
+  // Let Vercel handle caching headers instead of Next.js
+  // async headers() {
+  //   return [];
+  // },
 };
 
 // Sentry configuration

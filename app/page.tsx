@@ -6,9 +6,8 @@ import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { BFCacheRefresh } from "@/components/bfcache-refresh";
 
-// Force dynamic rendering to prevent caching
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Allow caching for better performance
+export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function Home() {
   // Fetch lessons server-side using service client

@@ -35,7 +35,7 @@
       ]
     },
     {
-      "source": "/*?_rsc=.*",
+      "source": "/",
       "headers": [
         {
           "key": "Cache-Control",
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "source": "/",
+      "source": "/((?!api|traces).*)",
       "headers": [
         {
           "key": "Cache-Control",
