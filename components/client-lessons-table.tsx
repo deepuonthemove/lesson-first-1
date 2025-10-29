@@ -20,6 +20,40 @@ export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLesson
     setLessons(initialLessons);
   }, [initialLessons]);
 
+  // Method to fetch latest lessons from API
+  const fetchLatestLessons = useCallback(async () => {
+    try {
+      const timestamp = Date.now();
+      const response = await fetch(`/api/lessons?t=${timestamp}`);
+      if (response.ok) {
+        const data = await response.json();
+        const latestLessons = data.lessons || [];
+        setLessons(latestLessons);
+      }
+    } catch (error) {
+      console.error('Error fetching latest lessons:', error);
+    }
+  }, []);
+
+  // Fetch latest data from API on component mount (page load/refresh/back button)
+  useEffect(() => {
+    // Fetch fresh data on mount
+    fetchLatestLessons();
+  }, [fetchLatestLessons]); // Run when fetchLatestLessons changes
+
+  // Handle page visibility change (back button, tab switching)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Page became visible, refresh data
+        fetchLatestLessons();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchLatestLessons]);
+
   // Method to add a lesson optimistically
   const addOptimisticLesson = useCallback((lesson: Lesson) => {
     setLessons(prevLessons => {
