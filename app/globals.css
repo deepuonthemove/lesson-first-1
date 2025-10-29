@@ -211,7 +211,7 @@
   }
 
   .border-animation-svg .border-path {
-    /* Solid line, no dash animation needed */
+    /* Solid line with animated gradient */
   }
 
   .lesson-outer-bounding-box.animate-border > *:not(.border-animation-svg) {
@@ -357,7 +357,7 @@
     margin: 2rem 0;
   }
 
-/* Unified Input Container - TLDW.us style with shadow lighting */
+/* Unified Input Container - TLDW.us style with gradient shadow */
 .unified-input-container {
   border: 1px solid hsl(var(--border));
   border-radius: 0.75rem;
@@ -365,15 +365,27 @@
   overflow: visible;
   position: relative;
   
-  /* TLDW.us-style shadow lighting */
-  box-shadow: 2px 11px 40.4px rgba(0, 0, 0, 0.06);
+  /* Multicolored gradient shadow effect */
+  box-shadow: 
+    0 0 0 0 transparent,
+    4px 8px 16px rgba(59, 130, 246, 0.3),
+    4px 8px 24px rgba(139, 92, 246, 0.2),
+    4px 8px 32px rgba(168, 85, 247, 0.15),
+    4px 8px 40px rgba(245, 158, 11, 0.1),
+    4px 8px 48px rgba(234, 179, 8, 0.05);
   transition-property: box-shadow;
   transition-timing-function: ease;
   transition-duration: 0.15s;
 }
 
 .dark .unified-input-container {
-  box-shadow: 2px 11px 40.4px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 0 0 0 transparent,
+    4px 8px 20px rgba(59, 130, 246, 0.4),
+    4px 8px 28px rgba(139, 92, 246, 0.3),
+    4px 8px 36px rgba(168, 85, 247, 0.2),
+    4px 8px 44px rgba(245, 158, 11, 0.15),
+    4px 8px 52px rgba(234, 179, 8, 0.1);
 }
 
 /* Integrated Textarea - Larger */
