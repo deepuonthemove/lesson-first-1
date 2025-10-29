@@ -1,8 +1,9 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+/*
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* config options here 
   async headers() {
     return [
       {
@@ -50,6 +51,7 @@ const nextConfig: NextConfig = {
     ];
   },
 };
+*/
 
 // Sentry configuration
 const sentryWebpackPluginOptions = {
