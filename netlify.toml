@@ -30,13 +30,13 @@
 
 
  
-# Cacheable headers for root page and RSC requests
+# Aggressive caching for main page (loads once, never refreshes)
 [[headers]]
   for = "/"
   [headers.values]
-    Cache-Control = "public, max-age=60, s-maxage=300"
+    Cache-Control = "public, max-age=31536000, s-maxage=31536000"
 
 [[headers]]
   for = "/*?_rsc=*"
   [headers.values]
-    Cache-Control = "public, max-age=60, s-maxage=300"
+    Cache-Control = "public, max-age=31536000, s-maxage=31536000"

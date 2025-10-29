@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { LessonsTable, Lesson } from "@/components/lessons-table";
-import { useRouter } from "next/navigation";
+// Removed useRouter - no page refreshes needed
 
 interface ClientLessonsTableProps {
   lessons: Lesson[];
@@ -13,7 +13,7 @@ interface ClientLessonsTableProps {
 export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLessonAdded, onLessonsUpdateRequested }: ClientLessonsTableProps) {
   const [lessons, setLessons] = useState<Lesson[]>(initialLessons);
   const [, setDeletingLessonId] = useState<string | null>(null);
-  const router = useRouter();
+  // Removed router - no page refreshes needed
 
   // Update local state when props change (e.g., after refresh)
   useEffect(() => {
@@ -76,13 +76,12 @@ export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLesson
       // Optimistically remove the lesson from UI immediately
       setLessons((prevLessons) => prevLessons.filter((lesson) => lesson.id !== lessonId));
       
-      // Then refresh to sync with server
-      router.refresh();
+      // No page refresh needed - we've already updated the UI optimistically
     } catch (error) {
       console.error('Error deleting lesson:', error);
       alert('Failed to delete lesson. Please try again.');
-      // Revert the optimistic update on error
-      setLessons(initialLessons);
+      // Don't revert to initialLessons - keep current state
+      // setLessons(initialLessons); // REMOVED - no revert needed
     } finally {
       setDeletingLessonId(null);
     }

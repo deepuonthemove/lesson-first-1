@@ -6,8 +6,8 @@ import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { BFCacheRefresh } from "@/components/bfcache-refresh";
 
-// Allow caching for better performance
-export const revalidate = 60; // Revalidate every 60 seconds
+// Page loads once and never refreshes - all updates via API
+// export const revalidate = 60; // REMOVED - no server-side revalidation
 
 export default async function Home() {
   // Fetch lessons server-side using service client

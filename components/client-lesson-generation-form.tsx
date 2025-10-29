@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { LessonGenerationForm } from "@/components/lesson-generation-form";
-import { useRouter } from "next/navigation";
+// Removed useRouter - no page refreshes needed
 import { Lesson } from "@/components/lessons-table";
 
 interface LessonGenerationOptions {
@@ -21,7 +21,7 @@ interface ClientLessonGenerationFormProps {
 
 export function ClientLessonGenerationForm({ onOptimisticLessonAdded, onLessonsUpdate }: ClientLessonGenerationFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const router = useRouter();
+  // Removed router - no page refreshes needed
 
   const handleGenerateLesson = async (options: LessonGenerationOptions) => {
     setIsGenerating(true);
@@ -69,7 +69,7 @@ export function ClientLessonGenerationForm({ onOptimisticLessonAdded, onLessonsU
           } catch (error) {
             console.error("Error polling for updates:", error);
             setIsGenerating(false);
-            router.refresh();
+            // No page refresh - just stop polling on error
           }
         };
         
