@@ -7,9 +7,10 @@ import { useRouter } from "next/navigation";
 interface ClientLessonsTableProps {
   lessons: Lesson[];
   onOptimisticLessonAdded?: (callback: (lesson: Lesson) => void) => void;
+  onLessonsUpdateRequested?: (callback: (lessons: Lesson[]) => void) => void;
 }
 
-export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLessonAdded }: ClientLessonsTableProps) {
+export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLessonAdded, onLessonsUpdateRequested }: ClientLessonsTableProps) {
   const [lessons, setLessons] = useState<Lesson[]>(initialLessons);
   const [, setDeletingLessonId] = useState<string | null>(null);
   const router = useRouter();
@@ -32,6 +33,11 @@ export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLesson
     });
   }, []);
 
+  // Method to update all lessons with fresh data from API
+  const updateAllLessons = useCallback((newLessons: Lesson[]) => {
+    setLessons(newLessons);
+  }, []);
+
   // Method to update lesson status
   const updateLessonStatus = useCallback((lessonId: string, status: Lesson["status"]) => {
     setLessons(prevLessons => 
@@ -47,6 +53,13 @@ export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLesson
       onOptimisticLessonAdded(addOptimisticLesson);
     }
   }, [onOptimisticLessonAdded, addOptimisticLesson]);
+
+  // Expose updateAllLessons method to parent component
+  useEffect(() => {
+    if (onLessonsUpdateRequested) {
+      onLessonsUpdateRequested(updateAllLessons);
+    }
+  }, [onLessonsUpdateRequested, updateAllLessons]);
 
   const handleLessonDeleted = async (lessonId: string) => {
     setDeletingLessonId(lessonId);

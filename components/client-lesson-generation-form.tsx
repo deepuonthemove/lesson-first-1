@@ -16,9 +16,10 @@ interface LessonGenerationOptions {
 
 interface ClientLessonGenerationFormProps {
   onOptimisticLessonAdded?: (lesson: Lesson) => void;
+  onLessonsUpdate?: (lessons: Lesson[]) => void;
 }
 
-export function ClientLessonGenerationForm({ onOptimisticLessonAdded }: ClientLessonGenerationFormProps) {
+export function ClientLessonGenerationForm({ onOptimisticLessonAdded, onLessonsUpdate }: ClientLessonGenerationFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
 
@@ -50,14 +51,19 @@ export function ClientLessonGenerationForm({ onOptimisticLessonAdded }: ClientLe
               const updateData = await updateResponse.json();
               const updatedLessons = updateData.lessons || [];
               
+              // Update lessons list with fresh data from API
+              if (onLessonsUpdate) {
+                onLessonsUpdate(updatedLessons);
+              }
+              
               // Check if the lesson is still generating
               const currentLesson = updatedLessons.find((l: any) => l.id === data.lesson.id);
               if (currentLesson && currentLesson.status === "generating") {
                 setTimeout(pollForUpdates, 2000);
               } else {
                 setIsGenerating(false);
-                // Refresh the page to show the completed lesson
-                router.refresh();
+                // No need to refresh - we've already updated the lessons list
+                // router.refresh();
               }
             }
           } catch (error) {

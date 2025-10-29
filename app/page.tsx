@@ -5,8 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
   // Fetch lessons server-side using service client
+  // Force dynamic rendering to prevent caching
   const supabase = createServiceClient();
   const { data: lessons, error } = await supabase
     .from('lessons')

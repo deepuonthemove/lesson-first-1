@@ -11,15 +11,27 @@ interface LessonCoordinatorProps {
 
 export function LessonCoordinator({ lessons }: LessonCoordinatorProps) {
   const [optimisticLessonAdded, setOptimisticLessonAdded] = useState<((lesson: Lesson) => void) | null>(null);
+  const [lessonsUpdateCallback, setLessonsUpdateCallback] = useState<((lessons: Lesson[]) => void) | null>(null);
 
   const handleOptimisticLessonAdded = useCallback((callback: (lesson: Lesson) => void) => {
     setOptimisticLessonAdded(() => callback);
   }, []);
 
+  const handleLessonsUpdateRequested = useCallback((callback: (lessons: Lesson[]) => void) => {
+    setLessonsUpdateCallback(() => callback);
+  }, []);
+
   return (
     <>
-      <ClientLessonGenerationForm onOptimisticLessonAdded={optimisticLessonAdded || undefined} />
-      <ClientLessonsTable lessons={lessons} onOptimisticLessonAdded={handleOptimisticLessonAdded} />
+      <ClientLessonGenerationForm 
+        onOptimisticLessonAdded={optimisticLessonAdded || undefined}
+        onLessonsUpdate={lessonsUpdateCallback || undefined}
+      />
+      <ClientLessonsTable 
+        lessons={lessons} 
+        onOptimisticLessonAdded={handleOptimisticLessonAdded}
+        onLessonsUpdateRequested={handleLessonsUpdateRequested}
+      />
     </>
   );
 }
