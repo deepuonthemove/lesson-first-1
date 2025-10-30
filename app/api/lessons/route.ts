@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateLessonWithTracing, getDefaultProvider, getAvailableProviders, type LessonGenerationOptions } from "@/lib/llm";
 import { logServerError, logServerMessage, withSentryErrorHandling, withSpan } from "@/lib/sentry";
@@ -127,6 +128,9 @@ export const POST = withSentryErrorHandling(async (request: NextRequest) => {
         includeExamples,
         includeExercises
       });
+
+      // Invalidate server-side cache so next page load gets fresh data
+      revalidatePath('/');
 
       return NextResponse.json({ lesson });
     } catch (error) {

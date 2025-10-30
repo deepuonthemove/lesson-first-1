@@ -13,6 +13,7 @@ interface ClientLessonsTableProps {
 export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLessonAdded, onLessonsUpdateRequested }: ClientLessonsTableProps) {
   const [lessons, setLessons] = useState<Lesson[]>(initialLessons);
   const [, setDeletingLessonId] = useState<string | null>(null);
+  const [hasOptimisticUpdate, setHasOptimisticUpdate] = useState(false);
   // Removed router - no page refreshes needed
 
   // Update local state when props change (e.g., after refresh)
@@ -29,17 +30,21 @@ export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLesson
         const data = await response.json();
         const latestLessons = data.lessons || [];
         setLessons(latestLessons);
+        // Reset optimistic flag when we get fresh data from API
+        setHasOptimisticUpdate(false);
       }
     } catch (error) {
       console.error('Error fetching latest lessons:', error);
     }
   }, []);
 
-  // Fetch latest data from API on component mount (page load/refresh/back button)
+  // Fetch latest data from API on component mount (only if no optimistic updates)
   useEffect(() => {
-    // Fetch fresh data on mount
-    fetchLatestLessons();
-  }, [fetchLatestLessons]); // Run when fetchLatestLessons changes
+    // Only fetch from API if we don't have optimistic updates
+    if (!hasOptimisticUpdate) {
+      fetchLatestLessons();
+    }
+  }, [hasOptimisticUpdate, fetchLatestLessons]); // Run when hasOptimisticUpdate or fetchLatestLessons changes
 
   // Handle page visibility change (back button, tab switching)
   useEffect(() => {
@@ -62,6 +67,8 @@ export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLesson
       if (exists) {
         return prevLessons;
       }
+      // Mark that we have optimistic data to prevent unnecessary API fetch
+      setHasOptimisticUpdate(true);
       // Add to the beginning of the list
       return [lesson, ...prevLessons];
     });
@@ -70,6 +77,8 @@ export function ClientLessonsTable({ lessons: initialLessons, onOptimisticLesson
   // Method to update all lessons with fresh data from API
   const updateAllLessons = useCallback((newLessons: Lesson[]) => {
     setLessons(newLessons);
+    // Reset optimistic flag when we get fresh data from API
+    setHasOptimisticUpdate(false);
   }, []);
 
   // Method to update lesson status
